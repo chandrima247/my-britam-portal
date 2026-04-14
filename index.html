@@ -1,0 +1,2800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Britam – Protecting What Matters Most</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; padding: 0; font-family: 'Open Sans', sans-serif; overflow: hidden; height: 100%; }
+    html { height: 100%; }
+    a { text-decoration: none; }
+    ul { list-style: none; margin: 0; padding: 0; }
+    button { cursor: pointer; }
+
+    /* ── Full-page scroll container ── */
+    #scroll-container {
+      height: 100vh;
+      overflow-y: scroll;
+      scroll-snap-type: y proximity;
+      scroll-behavior: smooth;
+    }
+
+    /* ── Each page section ── */
+    .page-section {
+      height: 100vh;
+      scroll-snap-align: start;
+      overflow: hidden;
+      padding-top: 72px;       /* clear fixed nav */
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* ── Hero carousel ── */
+    .carousel-wrap { position: relative; overflow: hidden; border-radius: 1rem; height: 440px; }
+    .carousel-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.7s ease-in-out; }
+    .carousel-slide.active { opacity: 1; z-index: 1; }
+
+    /* ── Carousel dots ── */
+    .carousel-dot {
+      width: 8px; height: 8px; border-radius: 9999px;
+      background: rgba(255,255,255,.5); cursor: pointer;
+      transition: background .3s, transform .3s;
+    }
+    .carousel-dot.active { background: #fff; transform: scale(1.3); }
+
+    /* ── FAQ ── */
+    .faq-body { max-height: 0; overflow: hidden; transition: max-height .35s ease; }
+    .faq-body.open { max-height: 220px; }
+    .faq-plus { display: inline-block; transition: transform .3s; }
+    .faq-plus.rotated { transform: rotate(45deg); }
+
+    /* ── Typing animation ── */
+    @keyframes bounce-dot {
+      0%, 80%, 100% { transform: translateY(0); }
+      40%           { transform: translateY(-6px); }
+    }
+    .bounce-dot { animation: bounce-dot 1.2s infinite ease-in-out; }
+    .bounce-dot:nth-child(2) { animation-delay: .15s; }
+    .bounce-dot:nth-child(3) { animation-delay: .30s; }
+
+    /* ── Notification pulse ── */
+    @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+    .pulse-dot { animation: pulse-dot 1.5s infinite; }
+
+    /* ── Utility ── */
+    .d-none { display: none !important; }
+
+    /* ── Announcements banner ── */
+    :root { --ann-h: 36px; }
+    body.ann-dismissed { --ann-h: 0px; }
+    #ann-banner {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 60;
+      height: 36px; background: #ba0c2f;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      font-family: Inter, sans-serif; font-size: 13px; color: #fff; font-weight: 500;
+      padding: 0 16px;
+    }
+    #ann-banner a { color: #fff; text-decoration: underline; text-underline-offset: 2px; font-weight: 600; }
+    #ann-dismiss {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: rgba(255,255,255,0.8);
+      font-size: 18px; line-height: 1; cursor: pointer; padding: 2px 6px;
+    }
+    #ann-dismiss:hover { color: #fff; }
+    body.ann-dismissed #ann-banner { display: none !important; }
+
+    /* ── Nav offset for banner ── */
+    nav { top: var(--ann-h) !important; }
+    .page-section { padding-top: calc(72px + var(--ann-h)) !important; }
+
+    /* ── Mobile nav panel ── */
+    #mob-nav {
+      position: fixed; top: calc(72px + var(--ann-h)); left: 0; right: 0; z-index: 48;
+      background: #fff; border-bottom: 1px solid #e5e7eb;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+      padding: 20px 24px 24px;
+    }
+    #mob-nav a, #mob-nav button { font-family: Open Sans, sans-serif; }
+
+    /* ── Hero intent cards ── */
+    .intent-card {
+      background: #fff; border: 1.5px solid #e5e7eb; border-radius: 10px;
+      padding: 11px 14px; cursor: pointer; transition: all .15s;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .intent-card:hover {
+      border-color: #0078bf;
+      box-shadow: 0 4px 14px rgba(0,120,191,0.12);
+      transform: translateY(-1px);
+    }
+    .intent-card:hover .intent-card-icon { color: #0078bf; }
+    .intent-card-icon { color: #374151; flex-shrink: 0; transition: color .15s; }
+    .intent-card-title { font-size: 13px; font-weight: 600; color: #111827; font-family: Inter, sans-serif; }
+
+    /* ── Product tabs ── */
+    .prod-tabs {
+      display: inline-flex; gap: 10px; background: none;
+      padding: 0; border-radius: 0; margin-bottom: 18px;
+      border: none; box-shadow: none;
+    }
+    .prod-tab {
+      padding: 10px 18px; border: 1px solid #d7e0ea; border-radius: 9999px; cursor: pointer;
+      font-size: 13px; font-weight: 700; font-family: Inter, sans-serif;
+      color: #0f172a; background: #fff; transition: all .18s; white-space: nowrap;
+    }
+    .prod-tab:hover:not(.active) { border-color: #bfd3e6; color: #0f172a; }
+    .prod-tab.active {
+      background: #0078bf;
+      color: #fff;
+      border-color: #0078bf;
+      box-shadow: 0 10px 20px rgba(0,120,191,0.18);
+    }
+
+    /* ── Recommendation rail ── */
+    .reco-rail {
+      margin: 0 0 16px;
+      padding: 16px 18px;
+      border: 1px solid #dbe7f0;
+      border-radius: 16px;
+      background:
+        radial-gradient(circle at top right, rgba(0,120,191,0.08), transparent 32%),
+        linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+      box-shadow: 0 10px 26px rgba(15,23,42,0.05);
+    }
+    .reco-head {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      gap: 12px; margin-bottom: 14px; flex-wrap: wrap;
+    }
+    .reco-kicker {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+      color: #0078bf; font-family: Inter, sans-serif; margin-bottom: 5px;
+    }
+    .reco-title {
+      font-size: 19px; font-weight: 800; letter-spacing: -0.03em;
+      color: #0f172a; font-family: Inter, sans-serif; margin: 0;
+    }
+    .reco-sub {
+      font-size: 12.5px; color: #64748b; font-family: Open Sans, sans-serif;
+      line-height: 1.55; max-width: 420px;
+    }
+    .reco-grid {
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px;
+    }
+    .reco-card {
+      background: rgba(255,255,255,0.96); border: 1px solid #e2e8f0; border-radius: 14px;
+      padding: 14px 14px 12px; min-height: 118px; display: flex; flex-direction: column;
+      gap: 8px; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .reco-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 22px rgba(15,23,42,0.08);
+      border-color: #bfdbfe;
+    }
+    .reco-card-top {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    .reco-pill {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 4px 8px; border-radius: 9999px;
+      background: #eaf4fb; color: #0b6ea8;
+      font-size: 10px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+      font-family: Inter, sans-serif;
+    }
+    .reco-match {
+      font-size: 11px; font-weight: 700; color: #059669; font-family: Inter, sans-serif;
+      white-space: nowrap;
+    }
+    .reco-card-title {
+      font-size: 16px; font-weight: 800; letter-spacing: -0.02em;
+      color: #0f172a; font-family: Inter, sans-serif; margin: 0;
+    }
+    .reco-card-copy {
+      font-size: 12.5px; line-height: 1.55; color: #64748b;
+      font-family: Open Sans, sans-serif; margin: 0;
+    }
+    .reco-card-meta {
+      margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    .reco-reason {
+      font-size: 11px; color: #475569; font-family: Inter, sans-serif; font-weight: 600;
+    }
+    .reco-cta {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px; border-radius: 9999px; background: #0078bf; color: #fff;
+      flex-shrink: 0;
+    }
+    .reco-cta svg {
+      width: 11px; height: 11px; transform: rotate(-45deg);
+    }
+
+    /* ── Product grid ── */
+    .prod-pages-shell {
+      --prod-grid-row-gap: 15px;
+      position: relative;
+      min-height: calc(196px * 2 + var(--prod-grid-row-gap) + 62px);
+      padding-bottom: 62px;
+    }
+    .prod-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      column-gap: 14px; row-gap: var(--prod-grid-row-gap); align-content: start; grid-auto-rows: auto; min-height: 0;
+    }
+    .prod-grid + .prod-grid {
+      margin-top: var(--prod-grid-row-gap);
+    }
+    /* ── Product item card — horizontal layout ── */
+    .prod-item {
+      background: #fff; border: 1px solid #e8edf2; border-radius: 12px;
+      cursor: pointer; transition: all .2s; overflow: hidden;
+      display: flex; flex-direction: row; align-items: stretch;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      height: 196px;
+    }
+    .prod-item:hover {
+      border-color: #0078bf;
+      box-shadow: 0 6px 22px rgba(0,0,0,0.10);
+      transform: translateY(-2px);
+    }
+    .prod-item:hover .prod-item-img img { transform: scale(1.06); }
+    .prod-item:hover .prod-item-cta { transform: translateX(2px); }
+
+    /* Left image panel */
+    .prod-item-img {
+      width: 48%; height: 100%; flex-shrink: 0; overflow: hidden; position: relative;
+    }
+    .prod-item-img img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform .35s ease; display: block;
+    }
+
+    /* Right content panel */
+    .prod-item-body {
+      padding: 16px 20px 16px 22px; display: flex; flex-direction: column;
+      gap: 0; flex: 1; min-width: 0; justify-content: flex-start;
+    }
+    .prod-item-meta {
+      display: none;
+    }
+    .prod-item-title {
+      font-size: 18px; font-weight: 700; line-height: 1.16; letter-spacing: -0.03em;
+      color: #0f172a; font-family: Inter, sans-serif; margin: 0 0 12px;
+    }
+    .prod-item-desc {
+      font-size: 12.5px; color: #6b7280; line-height: 1.55;
+      font-family: Open Sans, sans-serif; flex: 1;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .prod-item-cta {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; margin-top: auto; margin-left: auto;
+      border-radius: 9999px; background: #0078bf; color: #fff;
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .prod-item-cta svg {
+      width: 13px; height: 13px; flex-shrink: 0; transform: rotate(-45deg);
+    }
+    .prod-page-nav {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .prod-page-btn {
+      width: 42px;
+      height: 42px;
+      border: none;
+      border-radius: 9999px;
+      background: #0078bf;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color .18s ease, opacity .18s ease, transform .18s ease;
+    }
+    .prod-page-btn:hover {
+      background: #0567a2;
+      transform: translateY(-1px);
+    }
+    .prod-page-btn:disabled {
+      opacity: .42;
+      cursor: default;
+      transform: none;
+    }
+    .prod-page-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 2.5;
+    }
+
+    .why-split {
+      display: grid;
+      grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.25fr);
+      gap: 34px;
+      align-items: stretch;
+    }
+    .why-visual {
+      position: relative;
+      border-radius: 24px;
+      overflow: hidden;
+      min-height: 520px;
+      background: #dbeafe;
+      box-shadow: 0 18px 40px rgba(15,23,42,0.08);
+    }
+    .why-visual img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+    }
+    .why-copy {
+      margin-bottom: 16px;
+      max-width: 520px;
+    }
+    .why-copy p {
+      font-size: 14px;
+      line-height: 1.65;
+      color: #526071;
+      font-family: Open Sans, sans-serif;
+      margin: 0;
+    }
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .why-card {
+      background: #fff;
+      border: 1px solid #e6edf4;
+      border-radius: 16px;
+      padding: 16px 16px 14px;
+      box-shadow: 0 8px 24px rgba(15,23,42,0.04);
+      min-height: 154px;
+    }
+    .why-card-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: #dbeafe;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+    .why-card h3 {
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.2;
+      color: #101828;
+      font-family: Inter, sans-serif;
+      margin: 0 0 6px;
+    }
+    .why-card p {
+      font-size: 12.5px;
+      line-height: 1.55;
+      color: #5b6776;
+      font-family: Open Sans, sans-serif;
+      margin: 0;
+    }
+    @media (max-width: 1024px) {
+      .why-split {
+        grid-template-columns: 1fr;
+      }
+      .why-visual {
+        min-height: 360px;
+      }
+    }
+    @media (max-width: 640px) {
+      .why-grid {
+        grid-template-columns: 1fr;
+      }
+      .why-visual-overlay {
+        inset: auto 14px 14px 14px;
+      }
+    }
+
+    .hero-reco-wrap {
+      margin-top: 18px; max-width: 620px;
+      padding: 14px 16px;
+      border: 1px solid #e5e7eb; border-radius: 14px; background: #fff;
+      box-shadow: 0 6px 18px rgba(15,23,42,0.04);
+    }
+    .hero-reco-head {
+      display: block; margin-bottom: 10px;
+    }
+    .hero-reco-title {
+      font-size: 15px; font-weight: 800; color: #111827; font-family: Inter, sans-serif; margin: 0;
+    }
+    .hero-reco-list {
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .hero-reco-item {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 11px 12px; border: 1px solid #eef2f7; border-radius: 10px;
+      background: #f8fafc; cursor: pointer; transition: border-color .16s ease, transform .16s ease, box-shadow .16s ease;
+    }
+    .hero-reco-item:hover {
+      border-color: #bfdbfe; transform: translateY(-1px);
+      box-shadow: 0 8px 16px rgba(15,23,42,0.06);
+    }
+    .hero-reco-copy { min-width: 0; }
+    .hero-reco-item-title {
+      font-size: 13px; font-weight: 700; color: #111827; font-family: Inter, sans-serif; margin: 0 0 2px;
+    }
+    .hero-reco-item-sub {
+      font-size: 11.5px; color: #64748b; line-height: 1.45; font-family: Open Sans, sans-serif;
+    }
+    .hero-reco-arrow {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px; flex-shrink: 0;
+      border-radius: 9999px; background: #0078bf; color: #fff;
+    }
+    .hero-reco-arrow svg {
+      width: 11px; height: 11px; transform: rotate(-45deg);
+    }
+    .suggest-strip {
+      padding: 20px 0 18px;
+      background: linear-gradient(180deg, #fff8f9 0%, #ffffff 100%);
+      border-top: 1px solid #f3e2e6;
+      border-bottom: 1px solid #f3e2e6;
+    }
+    .suggest-strip-inner {
+      max-width: 1360px; margin: 0 auto; padding: 0 40px;
+      display: flex; align-items: center; gap: 18px;
+    }
+    .suggest-strip-copy {
+      flex: 0 0 260px;
+    }
+    .suggest-strip-kicker {
+      display: inline-flex; align-items: center;
+      font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+      color: #e3000f; font-family: Inter, sans-serif; margin-bottom: 6px;
+    }
+    .suggest-strip-title {
+      font-size: 22px; font-weight: 800; letter-spacing: -0.03em;
+      color: #111827; font-family: Inter, sans-serif; margin: 0 0 4px;
+    }
+    .suggest-strip-sub {
+      font-size: 12.5px; line-height: 1.55; color: #6b7280; font-family: Open Sans, sans-serif;
+    }
+    .suggest-strip-list {
+      flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px;
+    }
+    .suggest-card {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      min-height: 78px; padding: 14px 14px 14px 16px;
+      border-radius: 14px; border: 1px solid #efe3e6; background: #fff;
+      box-shadow: 0 8px 20px rgba(15,23,42,0.04);
+      cursor: pointer; transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    }
+    .suggest-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 26px rgba(15,23,42,0.08);
+      border-color: #e8bcc8;
+    }
+    .suggest-card-title {
+      font-size: 14px; font-weight: 800; color: #111827; font-family: Inter, sans-serif; margin: 0 0 3px;
+    }
+    .suggest-card-sub {
+      font-size: 11.5px; line-height: 1.45; color: #64748b; font-family: Open Sans, sans-serif;
+    }
+    .suggest-card-cta {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border-radius: 9999px; background: #e3000f; color: #fff; flex-shrink: 0;
+    }
+    .suggest-card-cta svg {
+      width: 12px; height: 12px; transform: rotate(-45deg);
+    }
+    .wa-launcher {
+      position: fixed;
+      right: 30px;
+      bottom: 28px;
+      z-index: 90;
+      width: 60px;
+      height: 60px;
+      border: none;
+      border-radius: 50%;
+      background: #25d366;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 18px 40px rgba(37,211,102,.32);
+      transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+    }
+    .wa-launcher:hover {
+      transform: translateY(-3px) scale(1.02);
+      background: #20be5b;
+      box-shadow: 0 22px 48px rgba(37,211,102,.38);
+    }
+    .wa-launcher svg {
+      width: 32px;
+      height: 32px;
+      fill: currentColor;
+    }
+    .wa-widget {
+      position: fixed;
+      right: 30px;
+      bottom: 102px;
+      z-index: 91;
+      width: min(380px, calc(100vw - 32px));
+      background: #fff;
+      border-radius: 26px;
+      box-shadow: 0 28px 80px rgba(9,10,12,.24);
+      border: 1px solid rgba(15,23,42,.06);
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(18px) scale(.98);
+      transform-origin: bottom right;
+      transition: opacity .22s ease, transform .22s ease;
+    }
+    .wa-widget.open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+    }
+    .wa-widget-head {
+      background: linear-gradient(135deg,#128c7e,#25d366);
+      color: #fff;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .wa-widget-title {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font: 800 15px/1 'Inter', sans-serif;
+      letter-spacing: -.02em;
+    }
+    .wa-widget-title span {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.16);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .wa-widget-title svg {
+      width: 21px;
+      height: 21px;
+      fill: #fff;
+    }
+    .wa-close {
+      width: 34px;
+      height: 34px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255,255,255,.14);
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .wa-close:hover { background: rgba(255,255,255,.24); }
+    .wa-close svg { width: 18px; height: 18px; fill: currentColor; }
+    .wa-widget-body {
+      padding: 18px;
+      background: #f6fbf8;
+    }
+    .wa-message {
+      max-width: 92%;
+      background: #fff;
+      border-radius: 4px 20px 20px 20px;
+      padding: 13px 15px;
+      margin-bottom: 14px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.07);
+      font-size: 13px;
+      line-height: 1.6;
+      color: #26313f;
+      font-family: 'Open Sans', sans-serif;
+    }
+    .wa-quick-replies {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 14px;
+    }
+    .wa-quick-reply {
+      border: 1px solid rgba(18,140,126,.20);
+      background: #fff;
+      color: #128c7e;
+      border-radius: 999px;
+      padding: 9px 11px;
+      font: 800 11px/1 'Inter', sans-serif;
+      letter-spacing: -.01em;
+      cursor: pointer;
+      box-shadow: 0 5px 14px rgba(0,0,0,.05);
+      transition: background .18s ease, color .18s ease, border-color .18s ease, transform .18s ease;
+    }
+    .wa-quick-reply:hover {
+      background: #e8f7ee;
+      color: #0f6e62;
+      border-color: rgba(18,140,126,.38);
+      transform: translateY(-1px);
+    }
+    .wa-widget-form {
+      display: flex;
+      align-items: flex-end;
+      gap: 9px;
+      background: #fff;
+      border-radius: 26px;
+      padding: 9px 8px 9px 16px;
+      border: 1px solid #e7e9ee;
+    }
+    .wa-widget-form textarea {
+      flex: 1;
+      min-width: 0;
+      border: none;
+      outline: none;
+      background: transparent;
+      font: 600 13px/1.45 'Open Sans', sans-serif;
+      color: #1f2937;
+      padding: 8px 0;
+      min-height: 38px;
+      max-height: 88px;
+      resize: none;
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+    .wa-send {
+      width: 42px;
+      height: 42px;
+      border: none;
+      border-radius: 50%;
+      background: #e3000f;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: transform .18s ease, background .18s ease;
+    }
+    .wa-send:hover {
+      transform: scale(1.05);
+      background: #c2000d;
+    }
+    .wa-send svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+      transform: translateX(1px);
+    }
+    .chat-float-wrap {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .chat-help-pill {
+      position: relative;
+      display: inline-flex; align-items: center; gap: 8px;
+      max-width: none;
+      padding: 11px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(227,0,15,0.18);
+      background: #fff;
+      color: #111827;
+      box-shadow: 0 12px 28px rgba(15,23,42,0.10);
+      font-family: Inter, sans-serif;
+      font-size: 13px; font-weight: 700; line-height: 1.35;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .chat-help-pill:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 32px rgba(15,23,42,0.14);
+      border-color: rgba(227,0,15,0.28);
+    }
+    .chat-help-pill::after {
+      content: "";
+      position: absolute;
+      right: -7px; top: 50%;
+      width: 12px; height: 12px;
+      background: #fff;
+      border-top: 1px solid rgba(227,0,15,0.18);
+      border-right: 1px solid rgba(227,0,15,0.18);
+      transform: translateY(-50%) rotate(45deg);
+    }
+    .chat-help-dot {
+      width: 8px; height: 8px; border-radius: 9999px; background: #e3000f; flex-shrink: 0;
+      box-shadow: 0 0 0 4px rgba(227,0,15,0.10);
+    }
+    @media (max-width: 768px) {
+      .chat-help-pill { display: none; }
+    }
+    @media (max-width: 640px) {
+      .wa-launcher {
+        right: 18px;
+        bottom: 18px;
+        width: 56px;
+        height: 56px;
+      }
+      .wa-widget {
+        right: 16px;
+        bottom: 86px;
+        width: calc(100vw - 32px);
+        border-radius: 24px;
+      }
+    }
+    @media (max-width: 1100px) {
+      .suggest-strip-inner { flex-direction: column; align-items: stretch; }
+      .suggest-strip-copy { flex: none; }
+      .suggest-strip-list { grid-template-columns: 1fr; }
+    }
+
+    .portal-head {
+      max-width: 720px;
+      margin: 0 0 26px;
+      text-align: left;
+    }
+    .portal-head p {
+      max-width: 620px;
+      margin: 0;
+    }
+    .portal-feature-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+      margin-bottom: 40px;
+    }
+    .portal-feature-card {
+      background: #fff;
+      border: 1px solid #e7edf4;
+      border-radius: 20px;
+      padding: 20px 20px 18px;
+      box-shadow: 0 8px 24px rgba(15,23,42,0.04);
+      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+      min-height: 184px;
+      display: flex;
+      flex-direction: column;
+    }
+    .portal-feature-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(15,23,42,0.08);
+      border-color: #c9dcef;
+    }
+    .portal-feature-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: rgba(0,120,191,0.10);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+    .portal-feature-card h3 {
+      font-size: 17px;
+      font-weight: 800;
+      color: #111827;
+      font-family: Inter, sans-serif;
+      margin: 0 0 8px;
+      line-height: 1.25;
+    }
+    .portal-feature-card p {
+      font-size: 13px;
+      color: #5f6b7a;
+      line-height: 1.6;
+      font-family: Open Sans, sans-serif;
+      margin: 0;
+      max-width: 240px;
+    }
+    .portal-feature-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: auto;
+      padding-top: 16px;
+      font-size: 12.5px;
+      font-weight: 800;
+      color: #0078bf;
+      font-family: Inter, sans-serif;
+      text-decoration: none;
+      transition: gap .16s ease, color .16s ease;
+    }
+    .portal-feature-link svg {
+      width: 13px;
+      height: 13px;
+    }
+    .portal-feature-card:hover .portal-feature-link {
+      gap: 9px;
+      color: #005f97;
+    }
+    .portal-cta-panel {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(0,120,191,0.12);
+    }
+    .portal-cta-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      width: 100%;
+    }
+    .portal-cta-copy-wrap {
+      max-width: 460px;
+    }
+    .portal-cta-copy-wrap h3 {
+      margin: 0 0 6px;
+    }
+    .portal-cta-copy-wrap p {
+      margin: 0;
+    }
+    .portal-cta-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 1100px) {
+      .portal-feature-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .portal-cta-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .portal-cta-copy-wrap {
+        max-width: none;
+      }
+    }
+    @media (max-width: 640px) {
+      .portal-feature-grid {
+        grid-template-columns: 1fr;
+      }
+      .portal-cta-actions {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body class="bg-white">
+
+<!-- ═══════════════ 0. ANNOUNCEMENTS BANNER ═══════════════ -->
+<div id="ann-banner">
+  <span>🔴&nbsp; <strong>New:</strong> Personal Accident cover now available online — get covered in 2 minutes &nbsp;<a href="#insurance">Learn more &rsaquo;</a></span>
+  <button id="ann-dismiss" onclick="dismissBanner()" aria-label="Dismiss">&times;</button>
+</div>
+
+<!-- ═══════════════ 1. NAVIGATION ═══════════════ -->
+<nav class="fixed left-0 right-0 z-50 bg-white border-b border-gray-200">
+  <div class="max-w-[1400px] mx-auto px-10 h-[72px] flex items-center justify-between">
+
+    <!-- Logo -->
+    <a href="#home" class="flex items-center gap-3">
+      <img src="https://ug.britam.com/templates/cassiopeia/images/logo.png" alt="Britam" class="h-12" />
+    </a>
+
+    <!-- Nav Links -->
+    <ul class="hidden md:flex items-center gap-8">
+      <li><a href="#home"      class="text-sm font-semibold text-[#374151] hover:text-[#0078bf] transition-colors" style="font-family:Open Sans,sans-serif">Home</a></li>
+      <li><a href="#insurance" class="text-sm font-semibold text-[#374151] hover:text-[#0078bf] transition-colors" style="font-family:Open Sans,sans-serif">Insurance</a></li>
+      <li><a href="#why-us"    class="text-sm font-semibold text-[#374151] hover:text-[#0078bf] transition-colors" style="font-family:Open Sans,sans-serif">Why Us</a></li>
+      <li><a href="#faq"       class="text-sm font-semibold text-[#374151] hover:text-[#0078bf] transition-colors" style="font-family:Open Sans,sans-serif">FAQ</a></li>
+      <li class="relative">
+        <button id="nav-support-btn" class="flex items-center gap-1.5 text-sm font-semibold text-[#374151] hover:text-[#0078bf] transition-colors" style="background:none;border:none;font-family:Open Sans,sans-serif;padding:0;">
+          <!-- HeadphonesIcon -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h2a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h2"/></svg>
+          Get Support
+        </button>
+        <!-- Nav support dropdown (absolutely positioned) -->
+        <div id="nav-support-dd" class="d-none absolute right-0 top-full mt-2 w-[340px] bg-white rounded-lg shadow-xl border border-gray-200 z-50" style="font-family:Open Sans,sans-serif">
+          <div class="flex items-center justify-between p-4 border-b border-gray-200">
+            <h3 class="text-lg font-bold text-[#111827]" style="font-family:Inter,sans-serif">Get Support</h3>
+            <button onclick="closeNavDd()" class="text-gray-400 hover:text-gray-600" style="background:none;border:none">
+              <!-- X -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="p-4" style="display:flex;flex-direction:column;gap:12px">
+            <a href="mailto:support@britam.com" class="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(0,120,191,0.1)">
+                <!-- Mail -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0078bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-[#111827] mb-0.5">Email Us</p>
+                <p class="text-xs text-[#6b7280]">support@britam.com</p>
+                <p class="text-xs text-[#6b7280] mt-1">We'll respond within 24 hours</p>
+              </div>
+            </a>
+            <a href="tel:+254203400000" class="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(0,120,191,0.1)">
+                <!-- Phone -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0078bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 9.5a19.79 19.79 0 0 1-3-8.57A2 2 0 0 1 3.67 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-[#111827] mb-0.5">Call Us</p>
+                <p class="text-xs text-[#6b7280]">+254 20 340 0000</p>
+                <p class="text-xs text-[#6b7280] mt-1">Mon-Fri: 8AM-6PM, Sat: 9AM-1PM</p>
+              </div>
+            </a>
+            <button onclick="openChatbot();closeNavDd();" class="w-full flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors text-left" style="background:none;border:none">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(227,0,15,0.1)">
+                <!-- Bot -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e3000f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-[#111827] mb-0.5">Chat Support</p>
+                <p class="text-xs text-[#6b7280]">Get instant help from our support chatbot</p>
+                <p class="text-xs text-[#6b7280] mt-1">Available 24/7</p>
+              </div>
+            </button>
+            <div class="border-t border-gray-200"></div>
+            <button onclick="openChatbot();closeNavDd();" class="w-full bg-[#e3000f] hover:bg-[#c2000d] text-white rounded-lg px-4 py-3 flex items-center justify-center gap-2 transition-all font-bold text-sm" style="font-family:Inter,sans-serif;border:none">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+              Start Chat
+            </button>
+          </div>
+          <div class="px-4 py-3 border-t border-gray-200" style="background:#f9fafb;border-radius:0 0 8px 8px">
+            <p class="text-xs text-[#6b7280] text-center">Our support chatbot can help with policy info, claims status, and more</p>
+          </div>
+        </div>
+      </li>
+    </ul>
+
+    <!-- CTA Buttons (desktop) -->
+    <div class="hidden md:flex items-center gap-3">
+      <a id="nav-portal-cta" href="#" onclick="return handlePortalCtaClick(event, false)" class="border-[1.5px] border-[#0078bf] text-[#0078bf] rounded-lg text-[15px] font-bold hover:bg-[#0078bf] hover:text-white transition-all px-[22px] py-[9px]" style="font-family:Inter,sans-serif">Login</a>
+      <a href="#insurance" class="bg-[#e3000f] text-white px-6 py-2.5 rounded text-sm font-bold hover:bg-[#c2000d] transition-all hover:shadow-lg" style="font-family:Inter,sans-serif">Explore</a>
+    </div>
+
+    <!-- Hamburger (mobile only) -->
+    <button id="mob-menu-btn" class="md:hidden flex flex-col justify-center items-center gap-[5px] w-10 h-10 rounded-lg hover:bg-gray-100 transition-colors" onclick="toggleMobNav()" aria-label="Menu" style="background:none;border:none">
+      <span id="hb-line1" class="block w-5 h-[2px] bg-[#374151] transition-all duration-200 origin-center"></span>
+      <span id="hb-line2" class="block w-5 h-[2px] bg-[#374151] transition-all duration-200"></span>
+      <span id="hb-line3" class="block w-5 h-[2px] bg-[#374151] transition-all duration-200 origin-center"></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ══ MOBILE NAV PANEL ══ -->
+<div id="mob-nav" class="d-none">
+  <ul style="display:flex;flex-direction:column;gap:4px;margin-bottom:16px">
+    <li><a href="#home"      onclick="toggleMobNav()" class="block px-3 py-3 rounded-lg text-[15px] font-semibold text-[#374151] hover:bg-gray-50 hover:text-[#0078bf] transition-colors">Home</a></li>
+    <li><a href="#insurance" onclick="toggleMobNav()" class="block px-3 py-3 rounded-lg text-[15px] font-semibold text-[#374151] hover:bg-gray-50 hover:text-[#0078bf] transition-colors">Insurance</a></li>
+    <li><a href="#why-us"    onclick="toggleMobNav()" class="block px-3 py-3 rounded-lg text-[15px] font-semibold text-[#374151] hover:bg-gray-50 hover:text-[#0078bf] transition-colors">Why Us</a></li>
+    <li><a href="#faq"       onclick="toggleMobNav()" class="block px-3 py-3 rounded-lg text-[15px] font-semibold text-[#374151] hover:bg-gray-50 hover:text-[#0078bf] transition-colors">FAQ</a></li>
+  </ul>
+  <div style="display:flex;flex-direction:column;gap:10px;border-top:1px solid #f1f5f9;padding-top:14px">
+    <a id="mob-portal-cta" href="#" onclick="return handlePortalCtaClick(event, true)" style="display:block;text-align:center;padding:11px;border:1.5px solid #0078bf;color:#0078bf;border-radius:8px;font-size:15px;font-weight:700;font-family:Inter,sans-serif;transition:all .15s" onmouseenter="this.style.background='#0078bf';this.style.color='#fff'" onmouseleave="this.style.background='';this.style.color='#0078bf'">Login</a>
+    <a href="#insurance" onclick="toggleMobNav()" style="display:block;text-align:center;padding:11px;background:#e3000f;color:#fff;border-radius:8px;font-size:15px;font-weight:700;font-family:Inter,sans-serif">Explore</a>
+  </div>
+</div>
+<!-- backdrop for nav dropdown -->
+<div id="nav-backdrop" class="d-none fixed inset-0 z-40" onclick="closeNavDd()"></div>
+
+<!-- ═══════════════ FULL-PAGE SCROLL WRAPPER ═══════════════ -->
+<div id="scroll-container">
+
+<!-- ═══════════════ 2. HERO ═══════════════ -->
+<section id="home" class="page-section bg-white">
+  <div style="display:flex;align-items:center;gap:48px;max-width:1360px;width:100%;margin:0 auto;padding:20px 40px">
+
+    <!-- Left content -->
+    <div class="flex-1">
+      <div class="inline-flex items-center bg-[#0078bf]/10 text-[#0078bf] px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-[0.12em] mb-4" style="font-family:Inter,sans-serif">
+        Britam Insurance Portfolio
+      </div>
+      <h1 class="font-bold leading-[1.08] text-[#111827] mb-5" style="font-family:Inter,sans-serif;font-size:clamp(32px,4vw,52px)">
+        Protecting Your Car,<br>
+        <span class="text-[#0078bf]">Your Business, and Your People</span>
+      </h1>
+      <p class="d-none text-[17px] text-[#374151] leading-relaxed mb-5 max-w-[720px]" style="font-family:Open Sans,sans-serif">
+        Explore Britam’s cover across motor, fire, liability, engineering, marine,
+        From motor to medical, travel to personal accident – we've got you covered.
+      </p>
+      <p class="text-[17px] text-[#374151] leading-relaxed mb-6 max-w-[720px]" style="font-family:Open Sans,sans-serif">
+        Explore Britam's cover across motor, fire, liability, engineering, marine,
+        workers compensation, and property protection built for real day-to-day needs.
+      </p>
+
+      <!-- Intent cards -->
+      <p class="d-none text-[11.5px] text-[#9ca3af] font-semibold uppercase tracking-[0.14em] mb-3 mt-0" style="font-family:Inter,sans-serif">What do you want to protect?</p>
+      <div class="d-none" style="display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:18px">
+
+        <div class="intent-card" onclick="openLoginModal()">
+          <svg class="intent-card-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2z"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="17.5" r="2.5"/></svg>
+          <span class="intent-card-title">My car</span>
+        </div>
+
+        <div class="intent-card" onclick="openLoginModal()">
+          <svg class="intent-card-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+          <span class="intent-card-title">My health</span>
+        </div>
+
+        <div class="intent-card" onclick="openLoginModal()">
+          <svg class="intent-card-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 2c-2-2-4-2-5.5-.5L10 5 1.8 6.2l5 5-2 2 4 4 2-2 5 5z"/></svg>
+          <span class="intent-card-title">My trip</span>
+        </div>
+
+        <div class="intent-card" onclick="openLoginModal()">
+          <svg class="intent-card-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span class="intent-card-title">My family</span>
+        </div>
+
+      </div>
+      <a href="#insurance" class="d-none inline-flex items-center gap-1.5 text-[13px] font-bold text-[#0078bf] hover:text-[#005c92] transition-colors mb-6" style="font-family:Inter,sans-serif">
+        View All Insurance
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
+      <div class="mb-6">
+        <a href="#insurance" class="inline-flex items-center gap-2 bg-[#e3000f] text-white px-6 py-3 rounded-lg text-[15px] font-bold hover:bg-[#c2000d] transition-all hover:-translate-y-0.5 hover:shadow-lg" style="font-family:Inter,sans-serif">
+          Explore Products
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <!-- Trust badges -->
+      <div class="flex items-center gap-5 flex-wrap">
+        <div class="flex items-center gap-1.5">
+          <!-- CheckCircle -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0078bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+          <span class="text-[13px] text-[#4b5563]" style="font-family:Open Sans,sans-serif">30+ years of trusted cover</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0078bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+          <span class="text-[13px] text-[#4b5563]" style="font-family:Open Sans,sans-serif">12 core insurance lines</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0078bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+          <span class="text-[13px] text-[#4b5563]" style="font-family:Open Sans,sans-serif">Support when claims need action</span>
+        </div>
+      </div>
+
+      <div class="hero-reco-wrap d-none">
+        <div class="hero-reco-head">
+          <h3 class="hero-reco-title">You may also like</h3>
+        </div>
+        <div class="hero-reco-list">
+          <div class="hero-reco-item" onclick="openLoginModal()">
+            <div class="hero-reco-copy">
+              <div class="hero-reco-item-title">Travel Insurance</div>
+              <div class="hero-reco-item-sub">Worldwide cover for holidays, business trips, and study travel.</div>
+            </div>
+            <span class="hero-reco-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
+          </div>
+          <div class="hero-reco-item" onclick="window.location.href='motor-insurance.html'">
+            <div class="hero-reco-copy">
+              <div class="hero-reco-item-title">Motor Insurance</div>
+              <div class="hero-reco-item-sub">Dependable cover for your car with roadside support and theft protection.</div>
+            </div>
+            <span class="hero-reco-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
+          </div>
+          <div class="hero-reco-item" onclick="openLoginModal()">
+            <div class="hero-reco-copy">
+              <div class="hero-reco-item-title">Health Insurance</div>
+              <div class="hero-reco-item-sub">Flexible medical cover for individuals, couples, and growing families.</div>
+            </div>
+            <span class="hero-reco-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: image carousel -->
+    <div style="flex:0 0 auto;width:50%;min-width:0">
+      <div class="carousel-wrap">
+            <div class="carousel-slide active">
+              <img src="hero_1.png" alt="Ugandan family standing beside a car" class="w-full h-full object-cover" />
+            </div>
+        <div class="carousel-slide">
+          <img src="https://images.pexels.com/photos/34287697/pexels-photo-34287697.jpeg?cs=srgb&amp;dl=pexels-kalanda-the-great-2149278178-34287697.jpg&amp;fm=jpg" alt="Family protected with group life cover" class="w-full h-full object-cover" />
+        </div>
+            <div class="carousel-slide">
+              <img src="hero_3.png" alt="Business cover and commercial protection" class="w-full h-full object-cover" />
+            </div>
+        <div class="carousel-slide">
+          <img src="https://img.freepik.com/premium-photo/black-family-floor-cardboard-roof-home-living-room-with-game-laughing-bond-with-love-father-mother-daughter-with-play-relax-box-sign-security-family-house-with-smile_590464-180289.jpg?semt=ais_incoming&amp;w=740&amp;q=80" alt="Family at home together under a cardboard roof" class="w-full h-full object-cover" />
+        </div>
+        <div class="carousel-slide">
+          <img src="hero_5.png" alt="Additional protection and peace of mind" class="w-full h-full object-cover" />
+        </div>
+        <!-- Dots -->
+        <div id="carousel-dots" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+          <div class="carousel-dot active" onclick="goToSlide(0)"></div>
+          <div class="carousel-dot" onclick="goToSlide(1)"></div>
+          <div class="carousel-dot" onclick="goToSlide(2)"></div>
+          <div class="carousel-dot" onclick="goToSlide(3)"></div>
+          <div class="carousel-dot" onclick="goToSlide(4)"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════ 3. INSURANCE TYPES ═══════════════ -->
+<section class="suggest-strip d-none">
+  <div class="suggest-strip-inner">
+    <div class="suggest-strip-copy">
+      <div class="suggest-strip-kicker">For You</div>
+      <h3 class="suggest-strip-title">Suggested Covers</h3>
+      <div class="suggest-strip-sub">Explore a few protection options that fit everyday needs, travel plans, and family cover.</div>
+    </div>
+    <div class="suggest-strip-list">
+      <div class="suggest-card" onclick="window.location.href='motor-insurance.html'">
+        <div>
+          <div class="suggest-card-title">Motor Insurance</div>
+          <div class="suggest-card-sub">Reliable cover for your car with roadside support.</div>
+        </div>
+        <span class="suggest-card-cta"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
+      </div>
+      <div class="suggest-card" onclick="openLoginModal()">
+        <div>
+          <div class="suggest-card-title">Travel Insurance</div>
+          <div class="suggest-card-sub">Worldwide cover for holidays, business trips, and study travel.</div>
+        </div>
+        <span class="suggest-card-cta"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
+      </div>
+      <div class="suggest-card" onclick="openLoginModal()">
+        <div>
+          <div class="suggest-card-title">Health Insurance</div>
+          <div class="suggest-card-sub">Flexible medical cover for individuals, couples, and families.</div>
+        </div>
+        <span class="suggest-card-cta"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="insurance" class="page-section" style="background:#f8fafc; justify-content:flex-start;">
+  <div style="max-width:1360px; width:100%; margin:0 auto; padding:28px 40px 28px; display:flex; flex-direction:column; flex:1; min-height:0; box-sizing:border-box;">
+
+    <!-- Header -->
+    <div style="display:flex;flex-direction:column;align-items:flex-start;margin-bottom:26px;gap:14px">
+      <div>
+        <div style="display:inline-flex;align-items:center;background:rgba(0,120,191,0.10);color:#0078bf;font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;margin-bottom:6px;font-family:Inter,sans-serif;letter-spacing:.06em">OUR PRODUCTS</div>
+        <h2 style="font-size:clamp(20px,2.2vw,28px);font-weight:800;color:#111827;font-family:Inter,sans-serif;margin:0 0 4px">Find The Cover That's Right For You</h2>
+      </div>
+    </div>
+
+    <!-- ── FOR INDIVIDUALS ── -->
+    <div class="reco-rail d-none">
+      <div class="reco-head">
+        <div>
+          <div class="reco-kicker">UI Preview • Recommendations</div>
+          <h3 class="reco-title">Recommended for you</h3>
+        </div>
+        <div class="reco-sub">A lightweight recommendation rail for returning visitors or logged-in users. This is only the visual mock for now, with sample recommendation reasons.</div>
+      </div>
+      <div class="reco-grid">
+        <div class="reco-card" onclick="openLoginModal()">
+          <div class="reco-card-top">
+            <span class="reco-pill">Travel</span>
+            <span class="reco-match">High match</span>
+          </div>
+          <h4 class="reco-card-title">Travel Insurance</h4>
+          <p class="reco-card-copy">A timely cover option for frequent regional and international trips.</p>
+          <div class="reco-card-meta">
+            <span class="reco-reason">Based on recent trip interest</span>
+            <span class="reco-cta"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
+          </div>
+        </div>
+        <div class="reco-card" onclick="window.location.href='motor-insurance.html'">
+          <div class="reco-card-top">
+            <span class="reco-pill">Motor</span>
+            <span class="reco-match">Popular add-on</span>
+          </div>
+          <h4 class="reco-card-title">Motor Insurance</h4>
+          <p class="reco-card-copy">Smart everyday protection for drivers looking for fast, reliable cover.</p>
+          <div class="reco-card-meta">
+            <span class="reco-reason">Viewed by returning customers</span>
+            <span class="reco-cta"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
+          </div>
+        </div>
+        <div class="reco-card" onclick="openLoginModal()">
+          <div class="reco-card-top">
+            <span class="reco-pill">Family</span>
+            <span class="reco-match">Suggested next</span>
+          </div>
+          <h4 class="reco-card-title">Health Insurance</h4>
+          <p class="reco-card-copy">A natural next step for customers comparing family and wellness protection.</p>
+          <div class="reco-card-meta">
+            <span class="reco-reason">Often paired with family cover</span>
+            <span class="reco-cta"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="prod-nonlife-shell" class="prod-pages-shell">
+    <div id="pg-ind" class="prod-grid" style="grid-template-columns:repeat(3,1fr)">
+
+      <div class="prod-item" style="--c:#0078bf" onclick="window.location.href='motor-insurance.html'">
+        <div class="prod-item-img"><img src="car.png" alt="Motor Insurance" loading="lazy"/></div>
+        <div class="prod-item-body">
+          <div class="prod-item-meta">29,203 policies</div>
+          <div class="prod-item-title">Motor Insurance</div>
+          <div class="prod-item-desc">Cover for private and commercial vehicles.</div>
+          <div class="prod-item-cta"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></div>
+        </div>
+      </div>
+
+      <div class="prod-item" style="--c:#0078bf" onclick="openLoginModal()">
+        <div class="prod-item-img"><img src="personal_accident.png" alt="Personal Accident" loading="lazy"/></div>
+        <div class="prod-item-body">
+          <div class="prod-item-meta">4,014 policies</div>
+          <div class="prod-item-title">Personal Accident</div>
+          <div class="prod-item-desc">Support if an accident leads to injury, disability, or loss of life.</div>
+          <div class="prod-item-cta"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></div>
+        </div>
+      </div>
+
+      <div class="prod-item" style="--c:#0078bf" onclick="openLoginModal()">
+        <div class="prod-item-img"><img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;q=80&amp;w=400" alt="Property protected against fire" loading="lazy"/></div>
+        <div class="prod-item-body">
+          <div class="prod-item-meta">1,038 policies</div>
+          <div class="prod-item-title">Fire Insurance</div>
+          <div class="prod-item-desc">Helps protect your buildings, stock, and property from fire loss.</div>
+          <div class="prod-item-cta"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></div>
+        </div>
+      </div>
+
+    </div><!-- /pg-ind -->
+
+    <!-- ── FAMILY & FUTURE ── -->
+    <div id="pg-fam" class="prod-grid" style="grid-template-columns:repeat(3,1fr)">
+
+      <div class="prod-item" style="--c:#059669" onclick="openLoginModal()">
+        <div class="prod-item-img"><img src="https://images.pexels.com/photos/16045331/pexels-photo-16045331.jpeg?cs=srgb&amp;dl=pexels-hoang-nc-483165236-16045331.jpg&amp;fm=jpg" alt="Warehouse team handling goods in transit" loading="lazy"/></div>
+        <div class="prod-item-body">
+          <div class="prod-item-meta">477 policies</div>
+          <div class="prod-item-title">Marine Insurance</div>
+          <div class="prod-item-desc">Protects goods while they move by road, air, or sea.</div>
+          <div class="prod-item-cta"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></div>
+        </div>
+      </div>
+
+      <div class="prod-item" style="--c:#059669" onclick="openLoginModal()">
+        <div class="prod-item-img"><img src="https://images.pexels.com/photos/10375897/pexels-photo-10375897.jpeg?cs=srgb&amp;dl=pexels-rdne-10375897.jpg&amp;fm=jpg" alt="Business meeting discussing liability protection" loading="lazy"/></div>
+        <div class="prod-item-body">
+          <div class="prod-item-meta">344 policies</div>
+          <div class="prod-item-title">Liability Insurance</div>
+          <div class="prod-item-desc">Helps cover third-party claims and legal costs.</div>
+          <div class="prod-item-cta"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></div>
+        </div>
+      </div>
+
+      <div class="prod-item" style="--c:#059669" onclick="openLoginModal()">
+        <div class="prod-item-img"><img src="https://images.pexels.com/photos/16045331/pexels-photo-16045331.jpeg?cs=srgb&amp;dl=pexels-hoang-nc-483165236-16045331.jpg&amp;fm=jpg" alt="Workers in a warehouse for injury cover" loading="lazy"/></div>
+        <div class="prod-item-body">
+          <div class="prod-item-meta">309 policies</div>
+          <div class="prod-item-title">Theft Insurance</div>
+          <div class="prod-item-desc">Protects your premises and stored assets against burglary.</div>
+          <div class="prod-item-cta"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></div>
+        </div>
+      </div>
+
+    </div><!-- /pg-fam -->
+
+    <!-- ── FOR BUSINESS ── -->
+    <div id="pg-biz" class="prod-grid d-none" style="grid-template-columns:repeat(3,1fr)">
+
+      <div class="prod-item" style="--c:#4f46e5" onclick="openLoginModal()">
+        <div class="prod-item-img"><img src="https://images.pexels.com/photos/8961522/pexels-photo-8961522.jpeg?cs=srgb&amp;dl=pexels-mikael-blomkvist-8961522.jpg&amp;fm=jpg" alt="Construction team for engineering cover" loading="lazy"/></div>
+        <div class="prod-item-body">
+          <div class="prod-item-meta">87 policies</div>
+          <div class="prod-item-title">Engineering Insurance</div>
+          <div class="prod-item-desc">Cover for projects, machinery, and contractor risks.</div>
+          <div class="prod-item-cta"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></div>
+        </div>
+      </div>
+
+      <div class="prod-item" style="--c:#4f46e5" onclick="openLoginModal()">
+        <div class="prod-item-img"><img src="https://images.pexels.com/photos/16045331/pexels-photo-16045331.jpeg?cs=srgb&amp;dl=pexels-hoang-nc-483165236-16045331.jpg&amp;fm=jpg" alt="Workers in a warehouse for injury cover" loading="lazy"/></div>
+        <div class="prod-item-body">
+          <div class="prod-item-meta">87 policies</div>
+          <div class="prod-item-title">Workers Compensation</div>
+          <div class="prod-item-desc">Support for employee injury claims at work.</div>
+          <div class="prod-item-cta"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></div>
+        </div>
+      </div>
+
+      <div class="prod-item" style="--c:#4f46e5" onclick="openLoginModal()">
+        <div class="prod-item-img"><img src="https://images.pexels.com/photos/11424278/pexels-photo-11424278.jpeg?cs=srgb&amp;dl=pexels-juliano-astc-1623739-11424278.jpg&amp;fm=jpg" alt="Pilot standing beside aircraft" loading="lazy"/></div>
+        <div class="prod-item-body">
+          <div class="prod-item-meta">10 policies</div>
+          <div class="prod-item-title">Aviation Insurance</div>
+          <div class="prod-item-desc">Protection for aircraft and related aviation risks.</div>
+          <div class="prod-item-cta"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></div>
+        </div>
+      </div>
+
+    </div><!-- /pg-biz -->
+
+      <div class="prod-page-nav" id="prod-page-nav" aria-label="Product pages">
+        <button type="button" class="prod-page-btn" id="prod-page-prev" aria-label="Show previous products" disabled>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <button type="button" class="prod-page-btn" id="prod-page-next" aria-label="Show more products">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── FOR EMPLOYERS ── -->
+    <!-- Life products removed for now
+    <div id="pg-emp" class="prod-grid d-none" style="grid-template-columns:repeat(2,1fr)">
+
+      <div class="prod-item" style="--c:#7c3aed" onclick="openLoginModal()">
+        <div class="prod-item-img"><img src="https://images.pexels.com/photos/34287697/pexels-photo-34287697.jpeg?cs=srgb&amp;dl=pexels-kalanda-the-great-2149278178-34287697.jpg&amp;fm=jpg" alt="Family protected with group life cover" loading="lazy"/></div>
+        <div class="prod-item-body">
+          <div class="prod-item-meta">24 policies</div>
+          <div class="prod-item-title">Britam Group Life Cover</div>
+          <div class="prod-item-desc">Life cover for employee and group schemes.</div>
+          <div class="prod-item-cta"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></div>
+        </div>
+      </div>
+
+      <div class="prod-item" style="--c:#7c3aed" onclick="openLoginModal()">
+        <div class="prod-item-img"><img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;q=80&amp;w=400" alt="Credit life discussion with advisor" loading="lazy"/></div>
+        <div class="prod-item-body">
+          <div class="prod-item-meta">7 policies</div>
+          <div class="prod-item-title">Credit Life Assurance</div>
+          <div class="prod-item-desc">Helps clear loan balances when life changes unexpectedly.</div>
+          <div class="prod-item-cta"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></div>
+        </div>
+      </div>
+
+    </div>
+    -->
+
+  </div>
+</section>
+
+
+<!-- ═══════════════ 4. WHY US ═══════════════ -->
+<section id="why-us" class="page-section bg-[#f9fafb]">
+  <div class="max-w-[1360px] mx-auto px-10">
+    <div class="why-split">
+      <div class="why-visual">
+        <img src="2.png" alt="Ugandan people outdoors smiling at the camera" loading="lazy"/>
+      </div>
+      <div>
+        <div class="mb-7">
+          <h2 class="text-3xl font-bold text-[#0f172a] mb-2" style="font-family:Inter,sans-serif">Why Choose Britam?</h2>
+          <div class="why-copy">
+            <p>We keep things simple: dependable cover, clear support, and a team that is ready when it matters most.</p>
+          </div>
+        </div>
+        <div class="why-grid">
+
+          <div class="why-card">
+            <div class="why-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0078bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h3>Trusted Protection</h3>
+            <p>Over 30 years of experience helping customers protect what matters most.</p>
+          </div>
+
+          <div class="why-card">
+            <div class="why-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0078bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <h3>Quick Claims Support</h3>
+            <p>Fast guidance and responsive claims handling when you need help most.</p>
+          </div>
+
+          <div class="why-card">
+            <div class="why-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0078bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h2a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h2"/></svg>
+            </div>
+            <h3>24/7 Support</h3>
+            <p>Round-the-clock help for questions, payments, updates, and emergencies.</p>
+          </div>
+
+          <div class="why-card">
+            <div class="why-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0078bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <h3>Customer First</h3>
+            <p>Friendly service and clear support tailored to you and your family.</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════ 5. CUSTOMER PORTAL ═══════════════ -->
+<section class="page-section bg-white">
+  <div style="max-width:1360px;width:100%;margin:0 auto;padding:20px 40px;box-sizing:border-box;">
+
+    <!-- Header -->
+    <div class="portal-head">
+      <div class="inline-block bg-[#0078bf]/10 text-[#0078bf] px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider mb-2" style="font-family:Inter,sans-serif">For Customers &amp; Intermediaries</div>
+      <h2 class="text-[28px] font-bold text-[#111827] mb-2" style="font-family:Inter,sans-serif">Manage Your Cover In One Place</h2>
+      <p class="text-sm text-[#374151] max-w-[640px] leading-relaxed" style="font-family:Open Sans,sans-serif">Check your cover, pay renewals, follow claim updates, and keep your account details current.</p>
+    </div>
+
+    <!-- Features grid -->
+    <div class="portal-feature-grid">
+
+      <div class="portal-feature-card">
+        <div class="portal-feature-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0078bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+        </div>
+        <h3>View Policies</h3>
+        <p>See active covers, renewal dates, and policy documents without calling support.</p>
+        <a href="#insurance" class="portal-feature-link">See your cover <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+      </div>
+
+      <div class="portal-feature-card">
+        <div class="portal-feature-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0078bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+        </div>
+        <h3>Make Payments</h3>
+        <p>Pay premiums by card or mobile money and get confirmation right away.</p>
+        <a href="#insurance" class="portal-feature-link">Pay a renewal <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+      </div>
+
+      <div class="portal-feature-card">
+        <div class="portal-feature-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0078bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        </div>
+        <h3>Track Claims</h3>
+        <p>Check claim progress, requested documents, and updates as your case moves.</p>
+        <a href="#faq" class="portal-feature-link">Track a claim <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+      </div>
+
+      <div class="portal-feature-card">
+        <div class="portal-feature-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0078bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h3>Update Details</h3>
+        <p>Update your phone number, email, address, or beneficiary details in minutes.</p>
+        <a href="#faq" class="portal-feature-link">Update profile <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+      </div>
+
+    </div>
+
+    <!-- CTA Card -->
+    <div class="portal-cta-panel">
+      <div class="portal-cta-inner">
+        <div class="portal-cta-copy-wrap">
+          <h3 id="portal-cta-title" class="text-[18px] font-extrabold text-[#111827]" style="font-family:Inter,sans-serif">Ready to Access Your Account?</h3>
+          <p id="portal-cta-copy" class="text-[13.5px] text-[#526071] leading-relaxed" style="font-family:Open Sans,sans-serif">Log in to check your policies, payments, and claim updates.</p>
+        </div>
+        <div class="portal-cta-actions">
+          <a id="portal-section-cta" href="#" onclick="return handlePortalCtaClick(event,false)" class="bg-[#e3000f] text-white min-w-[184px] px-6 py-3 rounded-lg text-[15px] font-bold hover:bg-[#c9000e] transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2" style="font-family:Inter,sans-serif">
+            <span id="portal-section-cta-label">Login</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════ 6. FAQ + FOOTER ═══════════════ -->
+<div style="scroll-snap-align:start;overflow:hidden;display:flex;flex-direction:column;padding-top:0px;box-sizing:border-box;">
+
+  <section id="faq" class="bg-[#fafbff]" style="flex-shrink:0;padding:36px 0 24px;">
+    <div class="max-w-[1360px] mx-auto px-10" style="padding-bottom: 34px;">
+      <div class="mb-6">
+        <h2 class="text-[32px] font-bold text-[#111827] mb-1" style="font-family:Inter,sans-serif">Frequently Asked Questions</h2>
+        <p class="text-sm text-[#6b7280] font-light" style="font-family:Open Sans,sans-serif">Got questions? We've got answers. <span style="color:#0078bf">Find quick solutions to common inquiries.</span></p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+        <!-- Q1 -->
+        <div class="bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-md transition-shadow">
+          <button class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left hover:bg-[#f9fafb] transition-colors" style="background:none;border:none">
+            <span class="text-[14px] font-semibold text-[#111827] pr-4" style="font-family:Inter,sans-serif">How do I file an insurance claim?</span>
+            <span class="faq-plus text-xl font-semibold flex-shrink-0" style="line-height:1">+</span>
+          </button>
+          <div class="faq-body"><div class="px-6 pb-5">
+            <p class="text-[13px] text-[#6b7280] leading-relaxed" style="font-family:Open Sans,sans-serif">Contact our 24/7 hotline, visit a branch, or submit online through our portal. Our team will guide you and keep you updated.</p>
+          </div></div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-md transition-shadow">
+          <button class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left hover:bg-[#f9fafb] transition-colors" style="background:none;border:none">
+            <span class="text-[14px] font-semibold text-[#111827] pr-4" style="font-family:Inter,sans-serif">What types of insurance does Britam offer?</span>
+            <span class="faq-plus text-xl font-semibold flex-shrink-0" style="line-height:1">+</span>
+          </button>
+          <div class="faq-body"><div class="px-6 pb-5">
+            <p class="text-[13px] text-[#6b7280] leading-relaxed" style="font-family:Open Sans,sans-serif">Motor, Travel, Medical, Personal Accident, Home, and Business Insurance — each designed for specific protection needs.</p>
+          </div></div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-md transition-shadow">
+          <button class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left hover:bg-[#f9fafb] transition-colors" style="background:none;border:none">
+            <span class="text-[14px] font-semibold text-[#111827] pr-4" style="font-family:Inter,sans-serif">How quickly are claims processed?</span>
+            <span class="faq-plus text-xl font-semibold flex-shrink-0" style="line-height:1">+</span>
+          </button>
+          <div class="faq-body"><div class="px-6 pb-5">
+            <p class="text-[13px] text-[#6b7280] leading-relaxed" style="font-family:Open Sans,sans-serif">Most claims are processed within 24–48 hours once all documentation is submitted. We keep you informed throughout.</p>
+          </div></div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-md transition-shadow">
+          <button class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left hover:bg-[#f9fafb] transition-colors" style="background:none;border:none">
+            <span class="text-[14px] font-semibold text-[#111827] pr-4" style="font-family:Inter,sans-serif">Can I customize my insurance coverage?</span>
+            <span class="faq-plus text-xl font-semibold flex-shrink-0" style="line-height:1">+</span>
+          </button>
+          <div class="faq-body"><div class="px-6 pb-5">
+            <p class="text-[13px] text-[#6b7280] leading-relaxed" style="font-family:Open Sans,sans-serif">Yes! Our products are flexible with various add-ons and coverage options to suit your specific needs and budget.</p>
+          </div></div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-md transition-shadow">
+          <button class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left hover:bg-[#f9fafb] transition-colors" style="background:none;border:none">
+            <span class="text-[14px] font-semibold text-[#111827] pr-4" style="font-family:Inter,sans-serif">What payment methods do you accept?</span>
+            <span class="faq-plus text-xl font-semibold flex-shrink-0" style="line-height:1">+</span>
+          </button>
+          <div class="faq-body"><div class="px-6 pb-5">
+            <p class="text-[13px] text-[#6b7280] leading-relaxed" style="font-family:Open Sans,sans-serif">Bank transfers, mobile money, credit/debit cards, and direct debit. Pay monthly, quarterly, or annually.</p>
+          </div></div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-md transition-shadow">
+          <button class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left hover:bg-[#f9fafb] transition-colors" style="background:none;border:none">
+            <span class="text-[14px] font-semibold text-[#111827] pr-4" style="font-family:Inter,sans-serif">Is there a waiting period for coverage to start?</span>
+            <span class="faq-plus text-xl font-semibold flex-shrink-0" style="line-height:1">+</span>
+          </button>
+          <div class="faq-body"><div class="px-6 pb-5">
+            <p class="text-[13px] text-[#6b7280] leading-relaxed" style="font-family:Open Sans,sans-serif">Most policies activate immediately upon payment. Any waiting periods are clearly outlined in your policy documents.</p>
+          </div></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <footer id="footer" class="bg-[#111827] text-white" style="flex:1;min-height:0;overflow:hidden;">
+    <div class="max-w-[1360px] mx-auto px-7 pt-8 pb-5">
+
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-6" style="border-bottom:1px solid rgba(255,255,255,0.1)">
+
+      <!-- Brand -->
+      <div>
+        <div class="mb-4">
+          <img src="https://ug.britam.com/templates/cassiopeia/images/logo.png" alt="Britam" class="h-12" style="filter:brightness(0) invert(1)" />
+        </div>
+        <p class="text-[13px] leading-relaxed font-light mb-4" style="font-family:Open Sans,sans-serif;color:rgba(255,255,255,0.75)">Your trusted insurance partner, providing comprehensive protection and peace of mind for over 30 years.</p>
+        <!-- Social icons -->
+        <div style="display:flex;gap:10px">
+          <a href="#" aria-label="Facebook" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:6px;background:rgba(255,255,255,0.1);transition:background .15s" onmouseenter="this.style.background='rgba(255,255,255,0.2)'" onmouseleave="this.style.background='rgba(255,255,255,0.1)'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          </a>
+          <a href="#" aria-label="Twitter / X" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:6px;background:rgba(255,255,255,0.1);transition:background .15s" onmouseenter="this.style.background='rgba(255,255,255,0.2)'" onmouseleave="this.style.background='rgba(255,255,255,0.1)'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,0.8)"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="#" aria-label="LinkedIn" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:6px;background:rgba(255,255,255,0.1);transition:background .15s" onmouseenter="this.style.background='rgba(255,255,255,0.2)'" onmouseleave="this.style.background='rgba(255,255,255,0.1)'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div>
+        <h4 class="text-[11px] font-bold uppercase tracking-wider mb-3.5" style="font-family:Inter,sans-serif">Quick Links</h4>
+        <ul style="display:flex;flex-direction:column;gap:8px">
+          <li><a href="#home"      class="text-[13px] font-light hover:text-white transition-colors" style="color:rgba(255,255,255,0.75);font-family:Open Sans,sans-serif">Home</a></li>
+          <li><a href="#insurance" class="text-[13px] font-light hover:text-white transition-colors" style="color:rgba(255,255,255,0.75);font-family:Open Sans,sans-serif">Insurance Products</a></li>
+          <li><a href="#why-us"   class="text-[13px] font-light hover:text-white transition-colors" style="color:rgba(255,255,255,0.75);font-family:Open Sans,sans-serif">Why Choose Us</a></li>
+          <li><a href="#faq"       class="text-[13px] font-light hover:text-white transition-colors" style="color:rgba(255,255,255,0.75);font-family:Open Sans,sans-serif">FAQ</a></li>
+          <li><a href="#" class="text-[13px] font-light hover:text-white transition-colors" style="color:rgba(255,255,255,0.75);font-family:Open Sans,sans-serif">Terms &amp; Conditions</a></li>
+        </ul>
+      </div>
+
+      <!-- Support -->
+      <div>
+        <h4 class="text-[11px] font-bold uppercase tracking-wider mb-3.5" style="font-family:Inter,sans-serif">Support</h4>
+        <ul style="display:flex;flex-direction:column;gap:8px">
+          <li><a href="#" class="text-[13px] font-light hover:text-white transition-colors" style="color:rgba(255,255,255,0.75);font-family:Open Sans,sans-serif">Knowledge Base</a></li>
+          <li><a href="#faq" class="text-[13px] font-light hover:text-white transition-colors" style="color:rgba(255,255,255,0.75);font-family:Open Sans,sans-serif">FAQs</a></li>
+          <li><a href="mailto:support@britam.com" class="text-[13px] font-light hover:text-white transition-colors" style="color:rgba(255,255,255,0.75);font-family:Open Sans,sans-serif">Contact Us</a></li>
+          <li><a href="#" class="text-[13px] font-light hover:text-white transition-colors" style="color:rgba(255,255,255,0.75);font-family:Open Sans,sans-serif">Report a Claim</a></li>
+          <li><a href="#" class="text-[13px] font-light hover:text-white transition-colors" style="color:rgba(255,255,255,0.75);font-family:Open Sans,sans-serif">Privacy Policy</a></li>
+        </ul>
+      </div>
+
+      <!-- Portal Access -->
+      <div>
+        <h4 class="text-[11px] font-bold uppercase tracking-wider mb-3.5" style="font-family:Inter,sans-serif">Portal Access</h4>
+        <ul style="display:flex;flex-direction:column;gap:8px">
+          <li><a href="#" onclick="openLoginModal();return false;" class="text-[13px] font-light hover:text-white transition-colors" style="color:rgba(255,255,255,0.75);font-family:Open Sans,sans-serif">Login</a></li>
+          <li><a href="#" onclick="openLoginModal('register');return false;" class="text-[13px] font-light hover:text-white transition-colors" style="color:rgba(255,255,255,0.75);font-family:Open Sans,sans-serif">Register New Account</a></li>
+          <li><a href="#" class="text-[13px] font-light hover:text-white transition-colors" style="color:rgba(255,255,255,0.75);font-family:Open Sans,sans-serif">View My Policies</a></li>
+          <li><a href="#" class="text-[13px] font-light hover:text-white transition-colors" style="color:rgba(255,255,255,0.75);font-family:Open Sans,sans-serif">Make a Payment</a></li>
+          <li><a href="#" class="text-[13px] font-light hover:text-white transition-colors" style="color:rgba(255,255,255,0.75);font-family:Open Sans,sans-serif">Track My Claim</a></li>
+        </ul>
+      </div>
+
+      <!-- Contact -->
+      <div>
+        <h4 class="text-[11px] font-bold uppercase tracking-wider mb-3.5" style="font-family:Inter,sans-serif">Contact Us</h4>
+        <ul style="display:flex;flex-direction:column;gap:12px;font-family:Open Sans,sans-serif">
+          <li style="display:flex;align-items:flex-start;gap:10px">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0078bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span class="text-[13px] font-light" style="color:rgba(255,255,255,0.75)">Britam Tower, Upperhill<br>Nairobi, Kenya</span>
+          </li>
+          <li style="display:flex;align-items:center;gap:10px">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0078bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 9.5a19.79 19.79 0 0 1-3-8.57A2 2 0 0 1 3.67 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <a href="tel:+254203400000" class="text-[13px] font-light hover:text-white transition-colors" style="color:rgba(255,255,255,0.75)">+254 20 340 0000</a>
+          </li>
+          <li style="display:flex;align-items:center;gap:10px">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0078bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            <a href="mailto:info@britam.com" class="text-[13px] font-light hover:text-white transition-colors" style="color:rgba(255,255,255,0.75)">info@britam.com</a>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="pt-5 flex flex-col md:flex-row justify-between items-center gap-1.5">
+      <p class="text-[11px] font-light" style="font-family:Open Sans,sans-serif;color:rgba(255,255,255,0.5)">© <span id="footer-year"></span> Britam Insurance. All rights reserved.</p>
+      <div class="flex gap-6 text-[13px]" style="font-family:Open Sans,sans-serif">
+        <a href="#" class="font-light hover:text-white transition-colors" style="color:rgba(255,255,255,0.75)">Privacy Policy</a>
+        <a href="#" class="font-light hover:text-white transition-colors" style="color:rgba(255,255,255,0.75)">Terms</a>
+      </div>
+    </div>
+
+  </div>
+  </footer>
+
+</div><!-- end FAQ+Footer wrapper -->
+
+
+</div><!-- end #scroll-container -->
+
+<!--
+═══════════════ 8. FLOATING CHAT WIDGET ═══════════════
+<div class="chat-float-wrap" style="position:fixed;bottom:24px;right:24px;z-index:40">
+
+<button class="chat-help-pill" onclick="openChatbot()" aria-label="Open chat support">
+    <span class="chat-help-dot"></span>
+    <span>Need help? Chat with support.</span>
+  </button>
+
+<!-- Floating support drawer -->
+  <div id="float-dd" class="d-none" style="position:fixed;bottom:96px;right:24px;width:380px;max-width:calc(100vw - 32px);height:560px;max-height:calc(100vh - 120px);background:#fff;border-radius:18px;box-shadow:0 24px 56px rgba(15,23,42,0.18);border:1px solid #e5e7eb;z-index:50;font-family:Open Sans,sans-serif;overflow:hidden;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid #e5e7eb;background:linear-gradient(90deg,#0078bf,#005c92)">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h2a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h2"/></svg>
+        </div>
+        <div>
+        <h3 style="font-family:Inter,sans-serif;font-size:17px;font-weight:700;color:#fff;margin:0">Britam Support</h3>
+          <p style="font-size:12px;color:rgba(255,255,255,0.82);margin:0">Chat with us anytime you need help</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:4px">
+        <button onclick="closeChatbot()" title="Minimize" style="width:32px;height:32px;border:none;border-radius:8px;background:rgba(255,255,255,0.12);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="chat-messages" style="flex:1;overflow-y:auto;padding:18px;background:#f9fafb;display:flex;flex-direction:column;gap:16px"></div>
+
+    <div style="padding:14px 14px 12px;border-top:1px solid #e5e7eb;background:#fff">
+      <div style="display:flex;gap:8px">
+        <input id="chat-input" type="text" placeholder="Ask about policies, claims, payments..." style="flex:1;padding:12px 16px;border-radius:9999px;border:1px solid #d1d5db;font-size:14px;font-family:Open Sans,sans-serif;outline:none" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}" onfocus="this.style.borderColor='#0078bf';this.style.boxShadow='0 0 0 2px rgba(0,120,191,0.18)'" onblur="this.style.borderColor='#d1d5db';this.style.boxShadow='none'" />
+        <button id="send-btn" onclick="sendMsg()" style="width:46px;height:46px;border-radius:50%;background:#e3000f;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;transition:background .2s" onmouseover="this.style.background='#c2000d'" onmouseout="this.style.background='#e3000f'">
+          <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+        </button>
+      </div>
+<p style="font-size:10px;color:#9ca3af;text-align:center;margin:8px 0 0;font-family:Open Sans,sans-serif">Chat responses may take a moment. For urgent matters, please call us directly.</p>
+    </div>
+  </div>
+
+  <!-- Floating button -->
+<button id="chat-btn" onclick="toggleFloatDd()" aria-label="Open chat support" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#e3000f,#c2000d);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,0.2);transition:transform .2s,box-shadow .2s;position:relative" onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.3)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.2)'">
+    <span id="chat-icon-open">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h2a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h2"/></svg>
+      <span class="pulse-dot" style="position:absolute;top:2px;right:2px;width:12px;height:12px;background:#22c55e;border-radius:50%;border:2px solid #fff"></span>
+    </span>
+    <span id="chat-icon-close" class="d-none">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </span>
+  </button>
+</div>
+-->
+
+<div class="wa-widget" id="waWidget" aria-label="WhatsApp chat widget">
+  <div class="wa-widget-head">
+    <div class="wa-widget-title">
+      <span aria-hidden="true">
+        <svg viewBox="0 0 90 90"><path d="M90 44a44 44 0 0 1-66 38L0 90l8-24A44 44 0 0 1 46 0c24 0 44 20 44 44zM46 7C25 7 9 24 9 44c0 8 2 15 7 21l-5 14 14-4a37 37 0 0 0 58-31C83 24 66 7 46 7zm22 47l-2-1-7-4-3 1-3 4h-3c-1 0-4-1-8-5-3-3-6-6-6-8v-2l2-2 1-1v-2l-4-8c0-2-1-2-2-2h-2l-3 1c-1 1-4 4-4 9s4 11 5 11c0 1 7 12 18 16 11 5 11 3 13 3s7-2 7-5l1-5z"/></svg>
+      </span>
+      WhatsApp Support
+    </div>
+    <button class="wa-close" type="button" id="waClose" aria-label="Close WhatsApp chat">
+      <svg viewBox="0 0 48 48"><path d="M38 12.83 35.17 10 24 21.17 12.83 10 10 12.83 21.17 24 10 35.17 12.83 38 24 26.83 35.17 38 38 35.17 26.83 24z"/></svg>
+    </button>
+  </div>
+  <div class="wa-widget-body">
+    <div class="wa-message">Hi. Need help choosing cover, checking a claim, or getting support? Send us a message and a Britam agent will guide you.</div>
+    <div class="wa-quick-replies" aria-label="Quick WhatsApp replies">
+      <button class="wa-quick-reply" type="button" data-wa-text="Hello Britam, please help me choose the right insurance cover.">Help me choose</button>
+      <button class="wa-quick-reply" type="button" data-wa-text="Hello Britam, I would like to get an insurance quote.">Get a quote</button>
+      <button class="wa-quick-reply" type="button" data-wa-text="Hello Britam, I need help with a claim update.">Claim support</button>
+      <button class="wa-quick-reply" type="button" data-wa-text="Hello Britam, I want help with payments or renewals.">Payments and renewals</button>
+    </div>
+    <div class="wa-widget-form">
+      <textarea id="waInput" rows="1" placeholder="Type your message..." aria-label="WhatsApp message"></textarea>
+      <button class="wa-send" type="button" id="waSend" aria-label="Send message on WhatsApp">
+        <svg viewBox="0 0 48 48"><path d="M4.02 42 46 24 4.02 6 4 20l30 4-30 4z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+<button class="wa-launcher" type="button" id="waLauncher" aria-label="Open WhatsApp chat" aria-expanded="false">
+  <svg viewBox="0 0 90 90"><path d="M90 44a44 44 0 0 1-66 38L0 90l8-24A44 44 0 0 1 46 0c24 0 44 20 44 44zM46 7C25 7 9 24 9 44c0 8 2 15 7 21l-5 14 14-4a37 37 0 0 0 58-31C83 24 66 7 46 7zm22 47l-2-1-7-4-3 1-3 4h-3c-1 0-4-1-8-5-3-3-6-6-6-8v-2l2-2 1-1v-2l-4-8c0-2-1-2-2-2h-2l-3 1c-1 1-4 4-4 9s4 11 5 11c0 1 7 12 18 16 11 5 11 3 13 3s7-2 7-5l1-5z"/></svg>
+</button>
+
+
+<!-- ═══════════════ 9. CHATBOT MODAL ═══════════════ -->
+<div id="chatbot-modal" class="d-none" aria-hidden="true"></div>
+
+
+<!-- ═══════════════ 10. VANILLA JS ═══════════════ -->
+<script>
+// ─── Announcements banner ────────────────────────────────────────
+(function initBanner() {
+  if (sessionStorage.getItem('annBanner') === '0') {
+    document.body.classList.add('ann-dismissed');
+  }
+})();
+
+function dismissBanner() {
+  document.body.classList.add('ann-dismissed');
+  sessionStorage.setItem('annBanner', '0');
+}
+
+const PORTAL_SESSION_KEY = 'britamPortalRole';
+
+function isPortalLoggedIn() {
+  return !!localStorage.getItem(PORTAL_SESSION_KEY);
+}
+
+function getPortalHref() {
+  return localStorage.getItem(PORTAL_SESSION_KEY) === 'intermediary'
+    ? 'agent-dashboard.html'
+    : 'dashboard.html';
+}
+
+function refreshPortalCtas() {
+  const label = isPortalLoggedIn() ? 'Manage' : 'Login';
+  const href = isPortalLoggedIn() ? getPortalHref() : '#';
+  ['nav-portal-cta', 'mob-portal-cta'].forEach(id => {
+    const link = document.getElementById(id);
+    if (!link) return;
+    link.textContent = label;
+    link.setAttribute('href', href);
+  });
+
+  const sectionCta = document.getElementById('portal-section-cta');
+  const sectionLabel = document.getElementById('portal-section-cta-label');
+  const sectionTitle = document.getElementById('portal-cta-title');
+  const sectionCopy = document.getElementById('portal-cta-copy');
+  const registerBtn = document.getElementById('portal-register-cta');
+  if (sectionCta) sectionCta.setAttribute('href', href);
+  if (sectionLabel) sectionLabel.textContent = isPortalLoggedIn() ? 'Manage Account' : 'Login';
+  if (sectionTitle) sectionTitle.textContent = isPortalLoggedIn() ? 'Welcome Back' : 'Ready to Access Your Account?';
+  if (sectionCopy) {
+    sectionCopy.textContent = isPortalLoggedIn()
+        ? 'Jump back into your dashboard to manage policies, payments, claims, and updates.'
+      : 'Log in to check your policies, payments, and claim updates.';
+  }
+  if (registerBtn) registerBtn.style.display = isPortalLoggedIn() ? 'none' : '';
+}
+
+function handlePortalCtaClick(event, isMobile) {
+  if (event) event.preventDefault();
+  if (isMobile && mobNavOpen) toggleMobNav();
+  if (isPortalLoggedIn()) {
+    window.location.href = getPortalHref();
+    return false;
+  }
+  openLoginModal();
+  return false;
+}
+
+refreshPortalCtas();
+
+// ─── WhatsApp widget ─────────────────────────────────────────────
+(function initWhatsappWidget() {
+  const phone = '256772751825';
+  const widget = document.getElementById('waWidget');
+  const launcher = document.getElementById('waLauncher');
+  const close = document.getElementById('waClose');
+  const send = document.getElementById('waSend');
+  const input = document.getElementById('waInput');
+  const quickReplies = Array.from(document.querySelectorAll('.wa-quick-reply'));
+
+  if (!widget || !launcher || !close || !send || !input) return;
+
+  function openWidget() {
+    widget.classList.add('open');
+    launcher.setAttribute('aria-expanded', 'true');
+  }
+
+  function closeWidget() {
+    widget.classList.remove('open');
+    launcher.setAttribute('aria-expanded', 'false');
+  }
+
+  function openWhatsapp() {
+    const fallback = 'Hello Britam, I need help choosing the right insurance cover.';
+    const message = (input.value || fallback).trim();
+    window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(message), '_blank', 'noopener');
+  }
+
+  function resizeComposer() {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 88) + 'px';
+  }
+
+  function openWidgetOnLoad() {
+    window.setTimeout(openWidget, 650);
+  }
+
+  let closeTimer = null;
+  function clearCloseTimer() {
+    if (closeTimer) {
+      window.clearTimeout(closeTimer);
+      closeTimer = null;
+    }
+  }
+  function queueClose() {
+    clearCloseTimer();
+    closeTimer = window.setTimeout(closeWidget, 140);
+  }
+
+  launcher.addEventListener('mouseenter', function () {
+    clearCloseTimer();
+    openWidget();
+  });
+  launcher.addEventListener('mouseleave', queueClose);
+  widget.addEventListener('mouseenter', clearCloseTimer);
+  widget.addEventListener('mouseleave', queueClose);
+
+  launcher.addEventListener('click', function () {
+    clearCloseTimer();
+    if (widget.classList.contains('open')) closeWidget();
+    else openWidget();
+  });
+  close.addEventListener('click', closeWidget);
+  document.addEventListener('click', function (event) {
+    if (!widget.classList.contains('open')) return;
+    if (widget.contains(event.target) || launcher.contains(event.target)) return;
+    clearCloseTimer();
+    closeWidget();
+  });
+  send.addEventListener('click', openWhatsapp);
+  quickReplies.forEach(function (reply) {
+    reply.addEventListener('click', function () {
+      input.value = reply.getAttribute('data-wa-text') || reply.textContent.trim();
+      resizeComposer();
+      input.focus();
+    });
+  });
+  input.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      openWhatsapp();
+    }
+  });
+  input.addEventListener('input', resizeComposer);
+  if (document.readyState === 'complete') openWidgetOnLoad();
+  else window.addEventListener('load', openWidgetOnLoad, { once: true });
+})();
+
+// ─── Product pager ───────────────────────────────────────────────
+let prodNonLifePage = 0;
+const prodPageGroups = [
+  ['pg-ind', 'pg-fam'],
+  ['pg-biz']
+];
+
+function setProdNonLifePage(page) {
+  prodNonLifePage = Math.max(0, Math.min(page, prodPageGroups.length - 1));
+
+  prodPageGroups.flat().forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('d-none');
+  });
+
+  prodPageGroups[prodNonLifePage].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('d-none');
+  });
+
+  const prevBtn = document.getElementById('prod-page-prev');
+  const nextBtn = document.getElementById('prod-page-next');
+  if (prevBtn) prevBtn.disabled = prodNonLifePage === 0;
+  if (nextBtn) nextBtn.disabled = prodNonLifePage === prodPageGroups.length - 1;
+}
+
+document.getElementById('prod-page-prev')?.addEventListener('click', () => setProdNonLifePage(prodNonLifePage - 1));
+document.getElementById('prod-page-next')?.addEventListener('click', () => setProdNonLifePage(prodNonLifePage + 1));
+setProdNonLifePage(0);
+
+// ─── Mobile nav ──────────────────────────────────────────────────
+let mobNavOpen = false;
+function toggleMobNav() {
+  mobNavOpen = !mobNavOpen;
+  const panel = document.getElementById('mob-nav');
+  const l1 = document.getElementById('hb-line1');
+  const l2 = document.getElementById('hb-line2');
+  const l3 = document.getElementById('hb-line3');
+  if (mobNavOpen) {
+    panel.classList.remove('d-none');
+    l1.style.transform = 'translateY(7px) rotate(45deg)';
+    l2.style.opacity   = '0';
+    l3.style.transform = 'translateY(-7px) rotate(-45deg)';
+  } else {
+    panel.classList.add('d-none');
+    l1.style.transform = '';
+    l2.style.opacity   = '';
+    l3.style.transform = '';
+  }
+}
+
+// ─── Footer year ────────────────────────────────────────────────
+document.getElementById('footer-year').textContent = new Date().getFullYear();
+
+// ─── Hero carousel ──────────────────────────────────────────────
+let curSlide = 0;
+const slides = document.querySelectorAll('.carousel-slide');
+const dots   = document.querySelectorAll('.carousel-dot');
+
+function goToSlide(n) {
+  slides[curSlide].classList.remove('active');
+  dots[curSlide].classList.remove('active');
+  curSlide = (n + slides.length) % slides.length;
+  slides[curSlide].classList.add('active');
+  dots[curSlide].classList.add('active');
+}
+setInterval(() => goToSlide(curSlide + 1), 3000);
+
+// ─── FAQ accordion ──────────────────────────────────────────────
+document.querySelectorAll('.faq-toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const body   = btn.nextElementSibling;
+    const plus   = btn.querySelector('.faq-plus');
+    const isOpen = body.classList.contains('open');
+    // close all
+    document.querySelectorAll('.faq-body').forEach(b => b.classList.remove('open'));
+    document.querySelectorAll('.faq-plus').forEach(p => p.classList.remove('rotated'));
+    // open clicked if it wasn't open
+    if (!isOpen) { body.classList.add('open'); plus.classList.add('rotated'); }
+  });
+});
+
+// ─── Nav support dropdown ────────────────────────────────────────
+const navBtn  = document.getElementById('nav-support-btn');
+const navDd   = document.getElementById('nav-support-dd');
+const navBack = document.getElementById('nav-backdrop');
+
+navBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  const hidden = navDd.classList.contains('d-none');
+  if (hidden) { navDd.classList.remove('d-none'); navBack.classList.remove('d-none'); }
+  else        { closeNavDd(); }
+});
+
+function closeNavDd() {
+  navDd.classList.add('d-none');
+  navBack.classList.add('d-none');
+}
+
+// ─── Float support dropdown ──────────────────────────────────────
+const floatDd   = document.getElementById('float-dd');
+const iconOpen  = document.getElementById('chat-icon-open');
+const iconClose = document.getElementById('chat-icon-close');
+const messages  = document.getElementById('chat-messages');
+const input     = document.getElementById('chat-input');
+let   botBusy   = false;
+let   inited    = false;
+
+function toggleFloatDd() {
+  const hidden = floatDd.classList.contains('d-none');
+  if (hidden) {
+    openChatbot();
+  } else {
+    closeFloatDd();
+  }
+}
+function closeFloatDd() {
+  floatDd.classList.add('d-none');
+  iconOpen.classList.remove('d-none');
+  iconClose.classList.add('d-none');
+}
+
+// ─── Chatbot modal ───────────────────────────────────────────────
+function openChatbot() {
+  closeNavDd();
+  floatDd.classList.remove('d-none');
+  iconOpen.classList.add('d-none');
+  iconClose.classList.remove('d-none');
+  if (!inited) {
+    inited = true;
+    addBotMsg("Hello! 👋 Welcome to Britam chat support.\n\nTo get started, please provide your:\n• Email address OR\n• Phone number\n\nThis helps us access your account information securely.");
+  }
+  setTimeout(() => input.focus(), 100);
+}
+function closeChatbot() {
+  closeFloatDd();
+}
+
+// SVG snippets
+const BOT_SVG  = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>`;
+const USER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+
+function fmtTime() {
+  return new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+}
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function addBotMsg(text) {
+  const d = document.createElement('div');
+  d.style.cssText = 'display:flex;gap:12px;align-items:flex-start';
+  d.innerHTML = `
+    <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#e3000f,#c2000d);display:flex;align-items:center;justify-content:center;flex-shrink:0">${BOT_SVG}</div>
+    <div style="max-width:70%;background:#fff;border:1px solid #e5e7eb;border-radius:16px 16px 16px 4px;padding:12px 16px;box-shadow:0 1px 2px rgba(0,0,0,0.05)">
+      <p style="font-size:13px;white-space:pre-line;margin:0;font-family:Open Sans,sans-serif;color:#111827;line-height:1.6">${esc(text)}</p>
+      <p style="font-size:10px;color:#9ca3af;margin:6px 0 0">${fmtTime()}</p>
+    </div>`;
+  messages.appendChild(d);
+  messages.scrollTop = messages.scrollHeight;
+}
+function addUserMsg(text) {
+  const d = document.createElement('div');
+  d.style.cssText = 'display:flex;gap:12px;align-items:flex-start;flex-direction:row-reverse';
+  d.innerHTML = `
+    <div style="width:32px;height:32px;border-radius:50%;background:#0078bf;display:flex;align-items:center;justify-content:center;flex-shrink:0">${USER_SVG}</div>
+    <div style="max-width:70%;background:#0078bf;border-radius:16px 16px 4px 16px;padding:12px 16px">
+      <p style="font-size:13px;white-space:pre-line;margin:0;font-family:Open Sans,sans-serif;color:#fff;line-height:1.6">${esc(text)}</p>
+      <p style="font-size:10px;color:rgba(255,255,255,0.7);margin:6px 0 0">${fmtTime()}</p>
+    </div>`;
+  messages.appendChild(d);
+  messages.scrollTop = messages.scrollHeight;
+}
+function showTyping() {
+  const d = document.createElement('div');
+  d.id = 'typing';
+  d.style.cssText = 'display:flex;gap:12px;align-items:flex-start';
+  d.innerHTML = `
+    <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#e3000f,#c2000d);display:flex;align-items:center;justify-content:center;flex-shrink:0">${BOT_SVG}</div>
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px 16px 16px 4px;padding:12px 16px;box-shadow:0 1px 2px rgba(0,0,0,0.05)">
+      <div style="display:flex;gap:4px">
+        <div class="bounce-dot" style="width:8px;height:8px;background:#9ca3af;border-radius:50%"></div>
+        <div class="bounce-dot" style="width:8px;height:8px;background:#9ca3af;border-radius:50%"></div>
+        <div class="bounce-dot" style="width:8px;height:8px;background:#9ca3af;border-radius:50%"></div>
+      </div>
+    </div>`;
+  messages.appendChild(d);
+  messages.scrollTop = messages.scrollHeight;
+}
+function hideTyping() {
+  const el = document.getElementById('typing');
+  if (el) el.remove();
+}
+
+function getBotReply(t) {
+  t = t.toLowerCase();
+  if (t.match(/claim|status/))
+    return "To check your claim status, I'll need to verify your information. Could you please provide:\n\n1. Your policy number\n2. Claim reference number\n\nAlternatively, you can log in to your portal to view all your claims in real-time.";
+  if (t.match(/policy|coverage/))
+    return "I can help you with policy information! To provide accurate details, please share:\n\n• Your policy number, or\n• The type of insurance (Motor, Medical, Travel, etc.)\n\nYou can also log in to view all your active policies and their details.";
+  if (t.match(/payment|pay|premium/))
+    return "For payment-related inquiries:\n\n• View payment history in your portal\n• Make payments online 24/7\n• Set up auto-pay for convenience\n• Download payment receipts\n\nWould you like me to guide you through making a payment?";
+  if (t.match(/document|certificate/))
+    return "You can access all your documents through the portal:\n\n• Policy certificates\n• Endorsements\n• Claim documents\n• Payment receipts\n\nWould you like help finding a specific document?";
+  if (t.match(/contact|agent|human/))
+    return "I understand you'd like to speak with a human agent. Here are your options:\n\n📧 Email: support@britam.com\n📞 Call: +254 20 340 0000\n\nAgents are available Mon-Fri 8AM-6PM, Sat 9AM-1PM.";
+  if (t.match(/hello|hi|hey/))
+    return "Hello! Great to hear from you. How can I assist you with your insurance needs today?";
+  if (t.match(/thank/))
+    return "You're welcome! Is there anything else I can help you with today?";
+  return "I'm here to help! I can assist with:\n\n• Policy information\n• Claims tracking\n• Payment inquiries\n• Document requests\n• General questions\n\nCould you please provide more details about what you need help with?";
+}
+
+function sendMsg() {
+  const text = input.value.trim();
+  if (!text || botBusy) return;
+  input.value = '';
+  addUserMsg(text);
+  botBusy = true;
+  showTyping();
+  setTimeout(() => {
+    hideTyping();
+    addBotMsg(getBotReply(text));
+    botBusy = false;
+  }, 1500);
+}
+</script>
+
+
+<!-- ═══════════════ LOGIN MODAL ═══════════════ -->
+<style>
+  #loginModal {
+    display:none; position:fixed; inset:0; z-index:9000;
+    background:rgba(15,23,42,0.55); backdrop-filter:blur(3px);
+    align-items:center; justify-content:center; padding:16px;
+    font-family:'Inter',sans-serif;
+  }
+  #loginModal.open { display:flex; }
+  .lm-card {
+    background:#fff; border-radius:20px; width:420px; max-width:100%;
+    max-height:92vh; overflow-y:auto;
+    box-shadow:0 32px 80px rgba(0,0,0,0.18);
+    position:relative; padding:36px 36px 28px;
+    animation:lmIn .22s ease;
+  }
+  @keyframes lmIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:none} }
+  .lm-close {
+    position:absolute; top:16px; right:18px; background:none; border:none;
+    cursor:pointer; color:#9ca3af; font-size:20px; line-height:1;
+    width:30px; height:30px; display:flex; align-items:center; justify-content:center;
+    border-radius:6px; transition:background .15s, color .15s;
+  }
+  .lm-close:hover { background:#f3f4f6; color:#374151; }
+  .lm-logo { display:block; height:36px; width:auto; margin:0 auto 20px; }
+  .lm-heading { font-size:22px; font-weight:700; color:#111827; text-align:center; margin-bottom:6px; }
+  .lm-sub { font-size:13px; color:#6b7280; text-align:center; margin-bottom:20px; line-height:1.5; }
+
+  /* Role selector */
+  .lm-role-wrap { margin-bottom:22px; }
+  .lm-role-label {
+    display:block; font-size:11px; font-weight:700; color:#6b7280;
+    text-transform:uppercase; letter-spacing:.6px; margin-bottom:8px;
+  }
+  .lm-role-options { display:flex; flex-wrap:wrap; gap:12px; }
+  .lm-role-option {
+    display:inline-flex; align-items:center; gap:9px; cursor:pointer;
+    font-family:'Inter',sans-serif; font-size:14px; font-weight:600; color:#374151;
+  }
+  .lm-role-option input {
+    appearance:none; -webkit-appearance:none; margin:0;
+    width:16px; height:16px; border-radius:9999px; border:1.8px solid #cbd5e1;
+    display:grid; place-items:center; transition:border-color .18s, background .18s;
+    cursor:pointer; background:#fff;
+  }
+  .lm-role-option input::before {
+    content:''; width:8px; height:8px; border-radius:9999px;
+    transform:scale(0); transition:transform .18s ease; background:#0078bf;
+  }
+  .lm-role-option input:checked { border-color:#0078bf; }
+  .lm-role-option input:checked::before { transform:scale(1); }
+
+  /* Form fields */
+  .lm-field { margin-bottom:14px; }
+  .lm-label { display:block; font-size:10px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:.6px; margin-bottom:5px; }
+  .lm-input-wrap { position:relative; display:flex; align-items:center; }
+  .lm-input {
+    width:100%; padding:11px 38px 11px 14px; border:1.5px solid #d1d5db; border-radius:8px;
+    font-family:'Inter',sans-serif; font-size:13.5px; color:#111827;
+    background:#fff; outline:none; transition:border-color .18s;
+  }
+  .lm-input:focus { border-color:#ba0c2f; }
+  .lm-input-icon { position:absolute; right:12px; color:#9ca3af; flex-shrink:0; display:flex; align-items:center; }
+  .lm-input-icon button { background:none; border:none; cursor:pointer; color:#9ca3af; padding:0; display:flex; }
+  .lm-input-icon button:hover { color:#374151; }
+
+  /* Select field */
+  .lm-select {
+    width:100%; padding:11px 14px; border:1.5px solid #d1d5db; border-radius:8px;
+    font-family:'Inter',sans-serif; font-size:13.5px; color:#111827;
+    background:#fff; outline:none; transition:border-color .18s; cursor:pointer;
+  }
+  .lm-select:focus { border-color:#ba0c2f; }
+
+  /* Password strength */
+  .lm-strength-bar { height:3px; border-radius:9999px; margin-top:6px; background:#e5e7eb; overflow:hidden; }
+  .lm-strength-fill { height:100%; border-radius:9999px; width:0; transition:width .3s, background .3s; }
+  .lm-strength-label { font-size:10px; font-weight:600; margin-top:3px; }
+
+  /* Forgot / links row */
+  .lm-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .lm-check-wrap { display:flex; align-items:center; gap:7px; font-size:12.5px; color:#374151; cursor:pointer; }
+  .lm-check-wrap input { accent-color:#ba0c2f; cursor:pointer; }
+  .lm-link { background:none; border:none; font-family:'Inter',sans-serif; font-size:12.5px; font-weight:600; color:#0078bf; cursor:pointer; padding:0; }
+  .lm-link:hover { text-decoration:underline; }
+  .lm-link-red { color:#ba0c2f; }
+
+  /* Buttons */
+  .lm-btn-primary {
+    display:block; width:100%; padding:13px; background:#ba0c2f; color:#fff;
+    border:none; border-radius:9999px; font-family:'Inter',sans-serif; font-size:14px;
+    font-weight:700; cursor:pointer; text-align:center; transition:background .18s;
+    margin-bottom:14px;
+  }
+  .lm-btn-primary:hover { background:#96091f; }
+  .lm-btn-outline {
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    width:100%; padding:11px; background:#fff; color:#111827;
+    border:1.5px solid #d1d5db; border-radius:9999px; font-family:'Inter',sans-serif;
+    font-size:13.5px; font-weight:600; cursor:pointer; transition:border-color .18s, background .18s;
+    margin-bottom:14px;
+  }
+  .lm-btn-outline:hover { border-color:#ba0c2f; background:#fff5f6; }
+  .lm-btn-ghost {
+    display:block; width:100%; padding:12px; background:#f3f4f6; color:#374151;
+    border:none; border-radius:9999px; font-family:'Inter',sans-serif; font-size:14px;
+    font-weight:600; cursor:pointer; text-align:center; transition:background .18s;
+  }
+  .lm-btn-ghost:hover { background:#e5e7eb; }
+
+  /* OR divider */
+  .lm-or { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .lm-or-line { flex:1; height:1px; background:#e5e7eb; }
+  .lm-or span { font-size:11.5px; color:#9ca3af; font-weight:500; white-space:nowrap; }
+
+  /* Footer text */
+  .lm-footer { text-align:center; font-size:12.5px; color:#6b7280; margin-top:8px; }
+  .lm-security { display:flex; align-items:center; justify-content:center; gap:5px; font-size:11px; color:#9ca3af; margin-top:14px; }
+
+  /* Back link */
+  .lm-back { display:flex; align-items:center; gap:5px; background:none; border:none; font-family:'Inter',sans-serif; font-size:12.5px; font-weight:600; color:#6b7280; cursor:pointer; margin-bottom:18px; padding:0; }
+  .lm-back:hover { color:#111827; }
+
+  /* OTP boxes */
+  .lm-otp-row { display:flex; gap:8px; justify-content:center; margin:20px 0; }
+  .lm-otp-box {
+    width:46px; height:52px; border:1.5px solid #d1d5db; border-radius:8px;
+    font-family:'Inter',sans-serif; font-size:20px; font-weight:700; color:#111827;
+    text-align:center; outline:none; transition:border-color .18s;
+  }
+  .lm-otp-box:focus { border-color:#ba0c2f; }
+
+  /* Timer */
+  .lm-timer { text-align:center; font-size:12px; color:#6b7280; margin-bottom:12px; }
+  .lm-timer strong { color:#ba0c2f; }
+
+  /* Success icon */
+  .lm-success-icon { width:56px; height:56px; border-radius:50%; background:#ecfdf5; display:flex; align-items:center; justify-content:center; margin:0 auto 18px; }
+
+  /* KYC upload area */
+  .lm-kyc-upload {
+    border:1.5px dashed #d1d5db; border-radius:10px; padding:18px 16px;
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    background:#fafafa; margin-bottom:14px;
+  }
+  .lm-kyc-upload-icon { color:#9ca3af; }
+  .lm-kyc-hint { font-size:11.5px; color:#9ca3af; margin:0; }
+  .lm-kyc-fname { font-size:12px; color:#059668; font-weight:600; }
+  /* OCR result panel */
+  .lm-ocr-panel {
+    background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px;
+    padding:14px; margin-bottom:14px;
+  }
+  .lm-ocr-label { font-size:10px; font-weight:700; color:#059668; text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; display:flex; align-items:center; gap:5px; }
+  /* Spinner */
+  @keyframes lmSpin { to{ transform:rotate(360deg); } }
+  .lm-spinner {
+    width:28px; height:28px; border:3px solid #e5e7eb; border-top-color:#ba0c2f;
+    border-radius:50%; animation:lmSpin .7s linear infinite; margin:0 auto;
+  }
+  /* Password hint */
+  .lm-pw-hint { font-size:10.5px; color:#9ca3af; margin-top:3px; }
+</style>
+
+<div id="loginModal" onclick="if(event.target===this)closeLoginModal()">
+  <div class="lm-card">
+    <button class="lm-close" onclick="closeLoginModal()">&#x2715;</button>
+    <img class="lm-logo"
+      src="https://lh3.googleusercontent.com/DY7OsM7rCH5pqUBTXJZAEfv21SOAr2bzXdmRuHykczCliM6oFxlKJSK6umIFtA2PJsIgqHmZT98QmAlVs_tozVwkyJJItoQur6B1=e365-pa-nu-s0-rw"
+      alt="Britam" />
+    <div id="modalView"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  let view = 'login';
+  let role = 'client';
+  let otpContact = '';
+  let timerInterval = null;
+  let regName = '';       // captured on register submit, used in KYC pre-fill
+
+  window.openLoginModal = function(v) {
+    view = v || 'login';
+    render();
+    document.getElementById('loginModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+  window.closeLoginModal = function() {
+    document.getElementById('loginModal').classList.remove('open');
+    document.body.style.overflow = '';
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  };
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeLoginModal(); });
+
+  function sv(v){ view=v; render(); }
+  function sr(r){
+    role=r;
+    document.querySelectorAll('input[name="lmRole"]').forEach(input=>{
+      input.checked = input.value===r;
+    });
+  }
+
+  function roleToggle() {
+    return `<div class="lm-role-wrap">
+      <div class="lm-role-label">I am</div>
+      <div class="lm-role-options">
+        <label class="lm-role-option">
+          <input type="radio" name="lmRole" value="client" ${role==='client'?'checked':''} onchange="window._lmSR('client')" />
+          <span>Customer</span>
+        </label>
+        <label class="lm-role-option">
+          <input type="radio" name="lmRole" value="intermediary" ${role==='intermediary'?'checked':''} onchange="window._lmSR('intermediary')" />
+          <span>Intermediary</span>
+        </label>
+      </div>
+    </div>`;
+  }
+  window._lmSR = function(r){ role=r; sr(r); };
+
+  function eyeIcon(fieldId) {
+    return `<button type="button" onclick="togglePw('${fieldId}')" tabindex="-1">
+      <svg id="eye-${fieldId}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>
+      </svg>
+    </button>`;
+  }
+  window.togglePw = function(id){
+    const inp = document.getElementById(id);
+    if(!inp) return;
+    inp.type = inp.type==='password' ? 'text' : 'password';
+  };
+
+  window.updateStrength = function(val){
+    const s = strengthLabel(val);
+    const bar = document.getElementById('strengthFill');
+    const lbl = document.getElementById('strengthLbl');
+    if(!bar||!lbl) return;
+    const cfg = { weak:{w:'33%',c:'#ef4444',t:'Weak'}, fair:{w:'66%',c:'#f59e0b',t:'Fair'}, strong:{w:'100%',c:'#059668',t:'Strong'} };
+    const k = s;
+    bar.style.width = cfg[k].w; bar.style.background = cfg[k].c;
+    lbl.textContent = val ? cfg[k].t : '';
+    lbl.style.color = cfg[k].c;
+  };
+  function strengthLabel(pw){
+    if(!pw) return 'weak';
+    let score = 0;
+    if(pw.length >= 8) score++;
+    if(/[A-Z]/.test(pw)) score++;
+    if(/[0-9]/.test(pw)) score++;
+    if(/[^A-Za-z0-9]/.test(pw)) score++;
+    return score <= 1 ? 'weak' : score === 2 ? 'fair' : 'strong';
+  }
+
+  window.updateIdPlaceholder = function(){
+    const sel = document.getElementById('idType');
+    const inp = document.getElementById('idValue');
+    if(!sel||!inp) return;
+    const p = {email:'Enter your email address',phone:'Enter your phone number',policy:'Enter your policy number',nin:'Enter your National ID (NIN)'};
+    inp.placeholder = p[sel.value] || 'Enter identifier';
+  };
+
+  function startTimer(){
+    if(timerInterval) clearInterval(timerInterval);
+    let secs = 120;
+    function tick(){
+      const el = document.getElementById('otpTimer');
+      if(!el){ clearInterval(timerInterval); return; }
+      const m = String(Math.floor(secs/60)).padStart(2,'0');
+      const s = String(secs%60).padStart(2,'0');
+      el.textContent = m+':'+s;
+      if(secs<=0){ clearInterval(timerInterval); el.textContent='Expired'; }
+      secs--;
+    }
+    tick();
+    timerInterval = setInterval(tick, 1000);
+  }
+
+  function setupOtpInputs(){
+    const boxes = document.querySelectorAll('.lm-otp-box');
+    boxes.forEach((box, i)=>{
+      box.addEventListener('input', function(){
+        this.value = this.value.replace(/\D/g,'').slice(-1);
+        if(this.value && boxes[i+1]) boxes[i+1].focus();
+      });
+      box.addEventListener('keydown', function(e){
+        if(e.key==='Backspace' && !this.value && boxes[i-1]) boxes[i-1].focus();
+      });
+    });
+    if(boxes[0]) boxes[0].focus();
+  }
+
+  function validate(fields){
+    for(const [id, label] of fields){
+      const el = document.getElementById(id);
+      if(!el||!el.value.trim()){ alert(`Please enter your ${label}.`); el&&el.focus(); return false; }
+    }
+    return true;
+  }
+
+  window.handleLogin = function(){
+    if(!validate([['lmEmail','email or phone number'],['lmPw','password']])) return;
+    otpContact = document.getElementById('lmEmail').value;
+    sv('otp-verify');
+    setTimeout(startTimer, 50);
+  };
+  window.startOtpLogin = function(){
+    const loginField = document.getElementById('lmEmail');
+    const typedValue = loginField && loginField.value ? loginField.value.trim() : '';
+    if(typedValue){
+      otpContact = typedValue;
+      sv('otp-verify');
+      setTimeout(startTimer, 50);
+      return;
+    }
+    sv('otp');
+  };
+  window.handleOtpRequest = function(){
+    if(!validate([['otpContact','email or phone number']])) return;
+    otpContact = document.getElementById('otpContact').value;
+    sv('otp-verify');
+    setTimeout(startTimer, 50);
+  };
+  window.editOtpContact = function(){
+    if(timerInterval){ clearInterval(timerInterval); timerInterval = null; }
+    sv('otp');
+    setTimeout(()=>{
+      const input = document.getElementById('otpContact');
+      if(input){
+        input.value = otpContact || '';
+        input.focus();
+        input.select();
+      }
+    }, 0);
+  };
+  window.handleVerifyOtp = function(){
+    const boxes = document.querySelectorAll('.lm-otp-box');
+    const code = Array.from(boxes).map(b=>b.value).join('');
+    if(code.length < 6){ alert('Please enter the complete 6-digit OTP.'); return; }
+    if(timerInterval){ clearInterval(timerInterval); timerInterval=null; }
+    localStorage.setItem(PORTAL_SESSION_KEY, role === 'intermediary' ? 'intermediary' : 'customer');
+    refreshPortalCtas();
+    closeLoginModal();
+    window.location.href = role==='intermediary' ? 'agent-dashboard.html' : 'dashboard.html';
+  };
+  window.handleRegister = function(){
+    if(!validate([['regName','full name'],['idValue','identifier'],['regPw','password'],['regPwC','confirm password']])) return;
+    const pw  = document.getElementById('regPw').value;
+    const pw2 = document.getElementById('regPwC').value;
+    if(pw!==pw2){ alert('Passwords do not match.'); return; }
+    if(strengthLabel(pw)==='weak'){ alert('Please choose a stronger password (min. 8 chars, uppercase, number, symbol).'); return; }
+    regName = document.getElementById('regName').value.trim();
+    sv('kyc');
+  };
+  window.handleKycFile = function(input){
+    const file = input.files[0];
+    if(!file) return;
+    const nameEl = document.getElementById('kycFileName');
+    if(nameEl){ nameEl.textContent = file.name; nameEl.style.color = '#059668'; }
+    const loading = document.getElementById('kycLoading');
+    const ocrSection = document.getElementById('kycOcrSection');
+    const submitBtn  = document.getElementById('kycSubmitBtn');
+    if(loading) loading.style.display = 'block';
+    if(ocrSection) ocrSection.style.display = 'none';
+    if(submitBtn) submitBtn.style.display = 'none';
+    setTimeout(()=>{
+      if(loading) loading.style.display = 'none';
+      // Simulate OCR pre-fill
+      const nameF = document.getElementById('ocrName');
+      const dobF  = document.getElementById('ocrDob');
+      const ninF  = document.getElementById('ocrNin');
+      if(nameF) nameF.value = regName || '';
+      if(dobF)  dobF.value  = '';   // left blank for user to fill
+      if(ninF)  ninF.value  = '';
+      if(ocrSection) ocrSection.style.display = 'block';
+      if(submitBtn)  submitBtn.style.display  = 'block';
+    }, 1800);
+  };
+  window.handleKyc = function(){
+    const nin = document.getElementById('ocrNin');
+    const dob = document.getElementById('ocrDob');
+    if(!nin||!nin.value.trim()){ alert('Please enter / confirm your NIN from the OCR results.'); nin&&nin.focus(); return; }
+    if(!dob||!dob.value.trim()){ alert('Please enter / confirm your Date of Birth.'); dob&&dob.focus(); return; }
+    sv('kyc-result');
+  };
+  window.handleSkipKyc = function(){
+    sv('kyc-result');
+  };
+  window.handleForgot = function(){
+    if(!validate([['forgotEmail','email address']])) return;
+    sv('reset-sent');
+  };
+  window.resendOtp = function(){
+    if(timerInterval) clearInterval(timerInterval);
+    const boxes = document.querySelectorAll('.lm-otp-box');
+    boxes.forEach(b=>b.value='');
+    if(boxes[0]) boxes[0].focus();
+    startTimer();
+  };
+
+  function mask(s){
+    if(!s) return '***';
+    if(s.includes('@')){ const [u,d]=s.split('@'); return u.slice(0,2)+'***@'+d; }
+    return s.slice(0,4)+'***'+s.slice(-3);
+  }
+  function escapeAttr(s){
+    return String(s||'')
+      .replace(/&/g,'&amp;')
+      .replace(/"/g,'&quot;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;');
+  }
+
+  function render(){
+    const el = document.getElementById('modalView');
+    if(!el) return;
+
+    if(view==='login') el.innerHTML = `
+      <h2 class="lm-heading">Welcome Back</h2>
+      <p class="lm-sub">Log in to access your policies, payments, and documents.</p>
+      ${roleToggle()}
+      <div class="lm-field">
+        <label class="lm-label">Email / Phone / NIN / Policy No.</label>
+        <div class="lm-input-wrap">
+          <input id="lmEmail" class="lm-input" type="text" placeholder="Enter email, phone, NIN or policy number" autocomplete="username" />
+          <span class="lm-input-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          </span>
+        </div>
+      </div>
+      <div class="lm-field">
+        <label class="lm-label">Password</label>
+        <div class="lm-input-wrap">
+          <input id="lmPw" class="lm-input" type="password" placeholder="Enter your password" autocomplete="current-password" />
+          <span class="lm-input-icon">${eyeIcon('lmPw')}</span>
+        </div>
+      </div>
+      <div class="lm-row">
+        <label class="lm-check-wrap"><input type="checkbox" /> Keep me logged in</label>
+        <button class="lm-link" onclick="sv('forgot')">Forgot Password?</button>
+      </div>
+      <button class="lm-btn-primary" onclick="handleLogin()">Log In &rarr;</button>
+      <div class="lm-or"><div class="lm-or-line"></div><span>or</span><div class="lm-or-line"></div></div>
+      <button class="lm-btn-outline" onclick="startOtpLogin()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 9.5a19.79 19.79 0 0 1-3-8.57A2 2 0 0 1 3.67 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Log in with OTP
+      </button>
+      <p class="lm-footer">Don't have an account? <button class="lm-link lm-link-red" onclick="sv('register')">Sign Up</button></p>
+      <div class="lm-security">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Your information is secure and protected.
+      </div>`;
+
+    else if(view==='register') el.innerHTML = `
+      <h2 class="lm-heading">Create Account</h2>
+      <p class="lm-sub">Register using any of the identifiers below.</p>
+      ${roleToggle()}
+      <div class="lm-field">
+        <label class="lm-label">Full Name</label>
+        <div class="lm-input-wrap">
+          <input id="regName" class="lm-input" type="text" placeholder="Enter your full name" />
+        </div>
+      </div>
+      <div class="lm-field">
+        <label class="lm-label">Identifier Type</label>
+        <select id="idType" class="lm-select" onchange="updateIdPlaceholder()">
+          <option value="email">Email Address</option>
+          <option value="phone">Phone Number</option>
+          <option value="policy">Policy Number</option>
+          <option value="nin">National ID (NIN)</option>
+        </select>
+      </div>
+      <div class="lm-field" style="margin-top:-6px">
+        <div class="lm-input-wrap">
+          <input id="idValue" class="lm-input" type="text" placeholder="Enter your email address" />
+        </div>
+      </div>
+      <div class="lm-field">
+        <label class="lm-label">Password</label>
+        <div class="lm-input-wrap">
+          <input id="regPw" class="lm-input" type="password" placeholder="Create a password" oninput="updateStrength(this.value)" />
+          <span class="lm-input-icon">${eyeIcon('regPw')}</span>
+        </div>
+        <div class="lm-strength-bar"><div class="lm-strength-fill" id="strengthFill"></div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div class="lm-strength-label" id="strengthLbl"></div>
+          <span class="lm-pw-hint">Min. 8 chars · uppercase · number · symbol</span>
+        </div>
+      </div>
+      <div class="lm-field">
+        <label class="lm-label">Confirm Password</label>
+        <div class="lm-input-wrap">
+          <input id="regPwC" class="lm-input" type="password" placeholder="Repeat your password" />
+          <span class="lm-input-icon">${eyeIcon('regPwC')}</span>
+        </div>
+      </div>
+      <button class="lm-btn-primary" onclick="handleRegister()">Create Account &rarr;</button>
+      <p class="lm-footer">Already have an account? <button class="lm-link lm-link-red" onclick="sv('login')">Log In</button></p>`;
+
+    else if(view==='kyc') el.innerHTML = `
+      <button class="lm-back" onclick="sv('register')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 5-7 7 7 7"/></svg>
+        Back
+      </button>
+      <h2 class="lm-heading">Verify Your Identity</h2>
+      <p class="lm-sub">Upload your National ID to complete registration. Accepted formats: PNG, JPG, PDF (max 5 MB).</p>
+      <div class="lm-kyc-upload">
+        <svg class="lm-kyc-upload-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="18" height="14" x="3" y="5" rx="2"/><path d="M3 9h18"/><circle cx="8.5" cy="13" r="1"/><path d="m14 12 2 2 4-4"/>
+        </svg>
+        <p class="lm-kyc-hint">National ID · Passport · Driving Permit</p>
+        <input type="file" id="kycFile" accept=".png,.jpg,.jpeg,.pdf" style="display:none" onchange="handleKycFile(this)" />
+        <button type="button" class="lm-btn-outline" style="width:auto;padding:9px 22px;margin:0" onclick="document.getElementById('kycFile').click()">
+          Choose File
+        </button>
+        <span id="kycFileName" class="lm-kyc-hint">No file selected</span>
+      </div>
+
+      <div id="kycLoading" style="display:none;text-align:center;padding:10px 0 4px">
+        <div class="lm-spinner"></div>
+        <p style="font-size:12px;color:#6b7280;margin-top:10px">Extracting document details…</p>
+      </div>
+
+      <div id="kycOcrSection" style="display:none">
+        <div class="lm-ocr-panel">
+          <div class="lm-ocr-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            OCR Extracted — Please review &amp; confirm
+          </div>
+          <div class="lm-field" style="margin-bottom:10px">
+            <label class="lm-label">Full Name</label>
+            <input id="ocrName" class="lm-input" type="text" placeholder="As on document" />
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="lm-field" style="margin-bottom:0">
+              <label class="lm-label">Date of Birth</label>
+              <input id="ocrDob" class="lm-input" type="date" />
+            </div>
+            <div class="lm-field" style="margin-bottom:0">
+              <label class="lm-label">NIN</label>
+              <input id="ocrNin" class="lm-input" type="text" placeholder="CM90000001234" />
+            </div>
+          </div>
+          <p style="font-size:10.5px;color:#6b7280;margin-top:8px;margin-bottom:0">
+            If any detail looks incorrect, edit it before submitting. Your data is verified against NIRA.
+          </p>
+        </div>
+      </div>
+
+      <button class="lm-btn-primary" id="kycSubmitBtn" style="display:none" onclick="handleKyc()">Confirm &amp; Complete Registration &rarr;</button>
+      <button class="lm-btn-ghost" onclick="handleSkipKyc()">Skip for Now — verify later</button>
+      <p class="lm-security" style="margin-top:10px">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Document processed securely. Used for identity verification only.
+      </p>`;
+
+    else if(view==='kyc-result') el.innerHTML = `
+      <div class="lm-success-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#059668" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <h2 class="lm-heading">Registration Complete!</h2>
+      <p class="lm-sub">Your account has been created successfully.<br><br>
+        Your identity verification is <strong style="color:#f59e0b">pending review</strong> — you'll be notified once confirmed. You can still access basic portal features in the meantime.</p>
+      <button class="lm-btn-primary" onclick="sv('login')">Proceed to Log In &rarr;</button>
+      <div class="lm-security" style="margin-top:12px">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Your information is secure and protected.
+      </div>`;
+
+    else if(view==='otp') el.innerHTML = `
+      <button class="lm-back" onclick="sv('login')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 5-7 7 7 7"/></svg>
+        Back to Login
+      </button>
+      <h2 class="lm-heading">Log in with OTP</h2>
+      <p class="lm-sub">Enter your registered email or phone number. A one-time code will be sent to you.</p>
+      <div class="lm-field">
+        <label class="lm-label">Email / Phone Number</label>
+        <div class="lm-input-wrap">
+          <input id="otpContact" class="lm-input" type="text" placeholder="Enter your email or mobile number" value="${escapeAttr(otpContact)}" />
+        </div>
+      </div>
+      <button class="lm-btn-primary" onclick="handleOtpRequest()">Send OTP &rarr;</button>`;
+
+    else if(view==='otp-verify') el.innerHTML = `
+      <button class="lm-back" onclick="(function(){if(timerInterval){clearInterval(timerInterval);timerInterval=null;}sv('login')})()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 5-7 7 7 7"/></svg>
+        Back
+      </button>
+      <h2 class="lm-heading">Enter OTP</h2>
+      <p class="lm-sub">OTP sent to <strong style="color:#111827">${mask(otpContact)}</strong> <button class="lm-link" style="display:inline;padding:0;margin-left:4px" onclick="editOtpContact()">Edit</button></p>
+      <div class="lm-otp-row">
+        ${[0,1,2,3,4,5].map(()=>`<input class="lm-otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" />`).join('')}
+      </div>
+      <div class="lm-timer">OTP expires in &nbsp;<strong id="otpTimer">02:00</strong></div>
+      <p class="lm-footer" style="margin-bottom:14px">Didn't receive it? <button class="lm-link" onclick="resendOtp()">Resend OTP</button></p>
+      <button class="lm-btn-primary" onclick="handleVerifyOtp()">Verify &amp; Log In</button>`;
+
+    else if(view==='forgot') el.innerHTML = `
+      <button class="lm-back" onclick="sv('login')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 5-7 7 7 7"/></svg>
+        Back to Login
+      </button>
+      <h2 class="lm-heading">Reset Password</h2>
+      <p class="lm-sub">Enter the email address linked to your account. We'll send you a secure reset link.</p>
+      <div class="lm-field">
+        <label class="lm-label">Email Address</label>
+        <div class="lm-input-wrap">
+          <input id="forgotEmail" class="lm-input" type="email" placeholder="Enter your email address" />
+        </div>
+      </div>
+      <button class="lm-btn-primary" onclick="handleForgot()">Send Reset Link</button>`;
+
+    else if(view==='reset-sent') el.innerHTML = `
+      <div class="lm-success-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#059668" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <h2 class="lm-heading">Check Your Email</h2>
+      <p class="lm-sub">A password reset link has been sent to your registered email address.<br><br>The link expires in <strong>30 minutes</strong>. Please check your spam folder if you don't see it.</p>
+      <button class="lm-btn-ghost" onclick="sv('login')">Back to Login</button>`;
+
+    // Post-render setup
+    if(view==='otp-verify') setTimeout(setupOtpInputs, 0);
+  }
+
+  function setupOtpInputs(){
+    const boxes = document.querySelectorAll('.lm-otp-box');
+    boxes.forEach((box, i)=>{
+      box.addEventListener('input', function(){
+        this.value = this.value.replace(/\D/g,'').slice(-1);
+        if(this.value && boxes[i+1]) boxes[i+1].focus();
+      });
+      box.addEventListener('keydown', function(e){
+        if(e.key==='Backspace' && !this.value && boxes[i-1]) boxes[i-1].focus();
+      });
+    });
+    if(boxes[0]) boxes[0].focus();
+  }
+
+  // expose sv and startTimer for inline onclick
+  window._sv = sv;
+  window.sv = sv;
+  window.startTimer = startTimer;
+})();
+</script>
+
+</body>
+</html>

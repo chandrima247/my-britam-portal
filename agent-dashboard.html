@@ -1,0 +1,3632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Dashboard – Britam</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+    :root {
+      --bg:      #f3f4f6;
+      --white:   #ffffff;
+      --faint:   #f8fafc;
+      --dark:    #1f2937;
+      --body:    #1e293b;
+      --muted:   #64748b;
+      --slate:   #334155;
+      --border:  #e2e8f0;
+      --bstrong: #cbd5e1;
+      --accent:  #059668;
+      --red:     #ba0c2f;
+    }
+
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--body); min-height:100vh; font-size:13px; }
+    .site-ai-wrap {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 1200;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .site-ai-pill {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 220px;
+      padding: 11px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(227,0,15,0.18);
+      background: #fff;
+      color: #111827;
+      box-shadow: 0 12px 28px rgba(15,23,42,0.10);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.35;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .site-ai-pill:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 32px rgba(15,23,42,0.14);
+      border-color: rgba(227,0,15,0.28);
+    }
+    .site-ai-pill::after {
+      content: "";
+      position: absolute;
+      right: -7px;
+      top: 50%;
+      width: 12px;
+      height: 12px;
+      background: #fff;
+      border-top: 1px solid rgba(227,0,15,0.18);
+      border-right: 1px solid rgba(227,0,15,0.18);
+      transform: translateY(-50%) rotate(45deg);
+    }
+    .site-ai-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 9999px;
+      background: #e3000f;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 4px rgba(227,0,15,0.10);
+    }
+    .site-ai-hidden { display: none !important; }
+    .site-ai-drawer {
+      position: fixed;
+      right: 24px;
+      bottom: 96px;
+      width: 380px;
+      max-width: calc(100vw - 32px);
+      height: 560px;
+      max-height: calc(100vh - 120px);
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 24px 56px rgba(15,23,42,0.18);
+      border: 1px solid #e5e7eb;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .site-ai-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 18px;
+      border-bottom: 1px solid #e5e7eb;
+      background: linear-gradient(90deg,#0078bf,#005c92);
+    }
+    .site-ai-brand { display: flex; align-items: center; gap: 12px; }
+    .site-ai-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #fff;
+    }
+    .site-ai-title { font-size: 17px; font-weight: 700; color: #fff; margin: 0; }
+    .site-ai-subtitle { font-size: 12px; color: rgba(255,255,255,0.82); margin: 0; }
+    .site-ai-min {
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .site-ai-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px;
+      background: #f9fafb;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .site-ai-composer { padding: 14px 14px 12px; border-top: 1px solid #e5e7eb; background: #fff; }
+    .site-ai-row { display: flex; gap: 8px; }
+    .site-ai-input {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 9999px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+    }
+    .site-ai-input:focus { border-color: #0078bf; box-shadow: 0 0 0 2px rgba(0,120,191,0.18); }
+    .site-ai-send {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: #e3000f;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      flex-shrink: 0;
+      transition: background .2s ease;
+    }
+    .site-ai-send:hover { background: #c2000d; }
+    .site-ai-footnote { font-size: 10px; color: #9ca3af; text-align: center; margin: 8px 0 0; }
+    .site-ai-btn {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg,#e3000f,#c2000d);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      transition: transform .2s ease, box-shadow .2s ease;
+      position: relative;
+    }
+    .site-ai-btn:hover { transform: scale(1.08); box-shadow: 0 8px 24px rgba(0,0,0,0.28); }
+    .site-ai-pulse {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 12px;
+      height: 12px;
+      background: #22c55e;
+      border-radius: 50%;
+      border: 2px solid #fff;
+    }
+    .site-ai-msg { display: flex; gap: 12px; align-items: flex-start; }
+    .site-ai-msg.user { flex-direction: row-reverse; }
+    .site-ai-msg-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #fff;
+    }
+    .site-ai-msg.bot .site-ai-msg-icon { background: linear-gradient(135deg,#e3000f,#c2000d); }
+    .site-ai-msg.user .site-ai-msg-icon { background: #0078bf; }
+    .site-ai-bubble { max-width: 72%; padding: 12px 16px; font-size: 13px; line-height: 1.6; }
+    .site-ai-msg.bot .site-ai-bubble {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px 16px 16px 4px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      color: #111827;
+    }
+    .site-ai-msg.user .site-ai-bubble { background: #0078bf; border-radius: 16px 16px 4px 16px; color: #fff; }
+    .site-ai-time { font-size: 10px; margin-top: 6px; }
+    .site-ai-msg.bot .site-ai-time { color: #9ca3af; }
+    .site-ai-msg.user .site-ai-time { color: rgba(255,255,255,0.72); }
+    .site-ai-typing { display: flex; gap: 4px; }
+    .site-ai-typing span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #9ca3af;
+      animation: siteAiBounce 1.1s infinite ease-in-out;
+    }
+    .site-ai-typing span:nth-child(2) { animation-delay: .14s; }
+    .site-ai-typing span:nth-child(3) { animation-delay: .28s; }
+    @keyframes siteAiBounce {
+      0%, 80%, 100% { transform: translateY(0); opacity: .5; }
+      40% { transform: translateY(-4px); opacity: 1; }
+    }
+    @media (max-width: 768px) {
+      .site-ai-pill { display: none; }
+      .site-ai-wrap { right: 16px; bottom: 16px; }
+      .site-ai-drawer { right: 16px; bottom: 88px; width: calc(100vw - 24px); max-width: calc(100vw - 24px); }
+    }
+
+    /* ── HERO ── */
+    .hero-wrap { background:#fff; padding:8px 8px 0; }
+    .hero { border-radius:12px; height:160px; overflow:hidden; position:relative; }
+    .hero-bg-img { width:100%; height:100%; object-fit:cover; display:block; }
+    .hero-logo { position:absolute; top:14px; left:20px; z-index:10; }
+    .hero-logo img { height:44px; width:auto; filter:drop-shadow(0 1px 3px rgba(255,255,255,.6)); }
+
+    /* ── LAYOUT ── */
+    .page-wrap { background:var(--bg); }
+    .wrap { max-width:1480px; margin:0 auto; padding:0 30px; }
+
+    /* ── HEADING ── */
+    .hrow { display:flex; align-items:center; justify-content:space-between; padding:20px 0 14px; }
+    .hleft { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .hrow h1 { font-size:20px; font-weight:700; color:var(--dark); letter-spacing:-.2px; }
+    .pill { font-size:10px; font-weight:700; border-radius:20px; padding:3px 10px; }
+    .pill-g { background:var(--faint); border:1px solid var(--border); color:var(--muted); }
+    .pill-b { background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; text-transform:uppercase; letter-spacing:.3px; }
+    .btn-back { color:#9ca3af; display:flex; align-items:center; gap:4px; font-size:11.5px; font-weight:600; text-decoration:none; }
+    .btn-back:hover { color:var(--dark); }
+    .btn-logout { width:30px; height:30px; border-radius:50%; background:none; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--red); }
+    .btn-logout:hover { background:rgba(186,12,47,.08); }
+
+    /* ── WHITE PANEL ── */
+    .panel { background:#fff; border-radius:8px; padding:18px 20px 24px; margin-bottom:26px; }
+    .section-head {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:16px;
+      flex-wrap:wrap;
+    }
+    .section-copy {
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .section-label {
+      font-size:11px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:#0078bf;
+    }
+    .section-title {
+      font-size:22px;
+      font-weight:800;
+      color:var(--dark);
+      letter-spacing:-.03em;
+    }
+    .section-sub {
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+    .ops-grid {
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+      align-items:stretch;
+    }
+    .ops-grid > .wcard {
+      display:flex;
+      flex-direction:column;
+      height:380px;
+    }
+    .ops-grid > .wcard > .wbody {
+      flex:1;
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+    }
+    .ops-widget-foot {
+      margin-top:auto;
+      padding-top:12px;
+      border-top:1px solid var(--border);
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .ops-summary-grid {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+    }
+    .ops-grid .fpick {
+      padding:10px 12px;
+      margin-bottom:14px;
+      border-radius:9px;
+      gap:10px;
+    }
+    .ops-grid .fpick-name {
+      font-size:11px;
+    }
+    .ops-grid .efform {
+      gap:12px 10px;
+    }
+    .ops-grid .eflbl {
+      font-size:9px;
+      margin-bottom:5px;
+    }
+    .ops-grid .efin,
+    .ops-grid .efsel {
+      min-height:40px;
+      padding:10px 12px;
+      border-radius:8px;
+      font-size:12px;
+    }
+    .ops-grid .efbtns {
+      justify-content:flex-end;
+      gap:10px;
+      margin-top:14px;
+    }
+    .ops-grid .efbtns button {
+      flex:none;
+      min-width:156px;
+      min-height:40px;
+      padding:10px 18px;
+      border-radius:8px;
+      font-size:11.5px;
+    }
+    .ops-grid .notif {
+      margin-top:14px;
+      padding:10px 12px;
+    }
+    .ops-grid .txn-list {
+      gap:8px;
+    }
+    .ops-grid .txn-card,
+    .ops-grid .erow {
+      padding:10px;
+      gap:10px;
+    }
+    .ops-grid .txn-date,
+    .ops-grid .txn-amt,
+    .ops-grid .eid,
+    .ops-grid .eamt {
+      font-size:12px;
+    }
+    .ops-grid .txn-meta,
+    .ops-grid .txn-id-row,
+    .ops-grid .emeta {
+      font-size:10px;
+      line-height:1.35;
+      margin-top:2px;
+    }
+    .ops-grid .ops-widget-foot {
+      gap:10px;
+      padding-top:10px;
+    }
+    .ops-grid .txn-pagination {
+      margin-top:0;
+    }
+    .ops-grid .pager-inline-text {
+      font-size:10.5px;
+    }
+    .client-shell {
+      display:grid;
+      grid-template-columns:360px minmax(0,1fr);
+      gap:16px;
+      align-items:start;
+    }
+    .client-rail {
+      border:1px solid var(--bstrong);
+      border-radius:14px;
+      background:#fff;
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+    .client-rail-top {
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .client-label {
+      font-size:11px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--muted);
+    }
+    .client-rail-copy {
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+    .client-field-stack {
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .client-search-wrap {
+      position:relative;
+    }
+    .client-input-actions {
+      position:absolute;
+      right:10px;
+      top:50%;
+      transform:translateY(-50%);
+      display:flex;
+      align-items:center;
+      gap:4px;
+    }
+    .client-input-icon-btn {
+      width:26px;
+      height:26px;
+      border:none;
+      background:transparent;
+      color:#94a3b8;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:8px;
+      cursor:pointer;
+    }
+    .client-input-icon-btn:hover {
+      background:#f8fafc;
+      color:var(--dark);
+    }
+    .client-search-row {
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:8px;
+      align-items:center;
+    }
+    .client-search {
+      width:100%;
+      border:1px solid var(--bstrong);
+      background:#fff;
+      border-radius:10px;
+      padding:12px 78px 12px 38px;
+      font-size:13px;
+      font-weight:500;
+      color:var(--dark);
+      outline:none;
+      font-family:'Inter',sans-serif;
+    }
+    .client-search:focus {
+      border-color:#0078bf;
+      box-shadow:0 0 0 2px rgba(0,120,191,.14);
+    }
+    .client-search-icon {
+      position:absolute;
+      left:13px;
+      top:50%;
+      transform:translateY(-50%);
+      color:#94a3b8;
+      pointer-events:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .client-select {
+      width:100%;
+      border:1px solid var(--bstrong);
+      background:#fff;
+      border-radius:10px;
+      padding:12px 112px 12px 38px;
+      font-size:13px;
+      font-weight:500;
+      color:var(--dark);
+      outline:none;
+      font-family:'Inter',sans-serif;
+    }
+    .client-select:focus {
+      border-color:#0078bf;
+      box-shadow:0 0 0 2px rgba(0,120,191,.14);
+    }
+    .client-combobox {
+      position:relative;
+    }
+    .client-combo-toggle {
+      width:28px;
+      height:28px;
+      border:none;
+      background:transparent;
+      color:#94a3b8;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      border-radius:8px;
+    }
+    .client-combo-toggle:hover {
+      background:#f8fafc;
+      color:var(--dark);
+    }
+    .client-options {
+      position:absolute;
+      top:calc(100% + 6px);
+      left:0;
+      right:0;
+      background:#fff;
+      border:1px solid var(--bstrong);
+      border-radius:12px;
+      box-shadow:0 14px 30px rgba(15,23,42,.10);
+      padding:6px;
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      max-height:220px;
+      overflow:auto;
+      z-index:25;
+    }
+    .client-options[hidden] {
+      display:none;
+    }
+    .client-option {
+      width:100%;
+      border:none;
+      background:#fff;
+      border-radius:8px;
+      padding:10px 12px;
+      text-align:left;
+      font-size:13px;
+      font-weight:500;
+      color:var(--dark);
+      cursor:pointer;
+      font-family:'Inter',sans-serif;
+    }
+    .client-option:hover,
+    .client-option.is-active {
+      background:#f0f7ff;
+      color:#0078bf;
+    }
+    .client-option.is-empty {
+      cursor:default;
+      color:var(--muted);
+    }
+    .client-option.is-empty:hover {
+      background:#fff;
+      color:var(--muted);
+    }
+    .client-search-btn {
+      height:42px;
+      padding:0 16px;
+      border-radius:10px;
+      border:1px solid var(--bstrong);
+      background:#fff;
+      color:var(--dark);
+      font-size:12px;
+      font-weight:700;
+      cursor:pointer;
+      font-family:'Inter',sans-serif;
+    }
+    .client-search-btn:hover {
+      background:#f8fafc;
+      border-color:#cbd5e1;
+    }
+    .client-search-note {
+      min-height:17px;
+      font-size:11px;
+      line-height:1.4;
+      color:var(--muted);
+    }
+    .client-mini-kpis {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+    }
+    .client-mini-card {
+      border:1px solid var(--bstrong);
+      border-radius:10px;
+      background:#f8fafc;
+      padding:12px 12px;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      min-width:0;
+    }
+    .client-mini-card span:first-child {
+      font-size:10px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      color:var(--muted);
+    }
+    .client-mini-card strong {
+      font-size:18px;
+      font-weight:800;
+      color:var(--dark);
+      line-height:1;
+    }
+    .client-mini-card em {
+      font-style:normal;
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.35;
+    }
+    .client-list { display:none !important; }
+    .client-main { min-width:0; }
+    .client-widget-cols {
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+      align-items:start;
+    }
+    .client-widget-col {
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      min-width:0;
+    }
+    .client-grid {
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+      align-items:start;
+    }
+    .client-policy-wrap {
+      background: var(--faint);
+      border-radius: 16px;
+      padding: 14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      position: sticky;
+      top: 16px;
+    }
+    .client-policy-list {
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .client-policy-footer {
+      margin-top:12px;
+      padding-top:12px;
+      border-top:1px solid var(--border);
+    }
+    .client-policy-card {
+      background:#fff;
+      border-radius:12px;
+      border:2px solid var(--bstrong);
+      padding:14px;
+      cursor:pointer;
+      transition:border-color .18s ease, box-shadow .18s ease;
+    }
+    .client-policy-card:hover { border-color:#60a5fa; }
+    .client-policy-card.active {
+      border-color:#3b82f6;
+      box-shadow:0 4px 14px rgba(59,130,246,.18);
+    }
+    .client-policy-top {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+    }
+    .client-policy-id {
+      font-size:14px;
+      font-weight:800;
+      color:var(--dark);
+    }
+    .client-policy-amt {
+      font-size:15px;
+      font-weight:800;
+      color:#059668;
+      white-space:nowrap;
+    }
+    .client-policy-bottom {
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .client-policy-tag {
+      font-size:10px;
+      font-weight:800;
+      border-radius:6px;
+      padding:4px 8px;
+      line-height:1;
+    }
+    .client-policy-tag.freq {
+      color:#1e40af;
+      background:#dbeafe;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+    .client-policy-tag.due {
+      color:#92400e;
+      background:#fef3c7;
+    }
+    .client-policy-refresh {
+      margin-left:auto;
+      width:30px;
+      height:30px;
+      border-radius:8px;
+      border:none;
+      background:#059668;
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+    }
+    .client-policy-refresh:hover { background:#047857; }
+    .client-empty {
+      border:1px dashed var(--border);
+      border-radius:12px;
+      background:#fbfdff;
+      padding:28px 20px;
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .client-doc-copy {
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.55;
+      max-width:30ch;
+    }
+    .agent-kpi-bar {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+      margin-bottom: 18px;
+    }
+    .agent-kpi-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 16px 20px;
+      border-right: 1px solid var(--border);
+      min-width: 0;
+    }
+    .agent-kpi-item:last-child { border-right: none; }
+    .agent-kpi-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+    .agent-kpi-lbl {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--dark);
+      text-transform: uppercase;
+      letter-spacing: .38px;
+    }
+    .agent-kpi-sub {
+      font-size: 11.5px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .agent-kpi-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .agent-kpi-val {
+      font-size: 27px;
+      font-weight: 800;
+      color: var(--dark);
+      line-height: .96;
+      letter-spacing: -.03em;
+    }
+    .agent-kpi-note {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #64748b;
+    }
+    .agent-kpi-item.is-warn .agent-kpi-val,
+    .agent-kpi-item.is-warn .agent-kpi-note { color: #f59e0b; }
+    .agent-kpi-item.is-alert {
+      background: #fff5f6;
+    }
+    .agent-kpi-item.is-alert .agent-kpi-lbl { color: #e0556e; }
+    .agent-kpi-item.is-alert .agent-kpi-val,
+    .agent-kpi-item.is-alert .agent-kpi-note { color: var(--red); }
+
+    .c-g { color:#059668; }
+    .c-a { color:#f59e0b; }
+    .c-r { color:#ef4444; }
+    .c-v { color:#7c3aed; }
+    /* ── 3-COL GRID ── */
+    .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; align-items:start; }
+    .col   { display:flex; flex-direction:column; gap:12px; }
+
+    /* ── WIDGET ── */
+    .wcard { border-radius:10px; border:1px solid var(--bstrong); background:#fff; overflow:hidden; }
+    .whead { display:flex; align-items:center; justify-content:space-between; padding:10px 13px; border-bottom:1px solid var(--border); }
+    .wttl  { display:flex; align-items:center; gap:6px; }
+    .wbar  { width:3px; height:17px; border-radius:2px; background:var(--accent); flex-shrink:0; }
+    .wtitle { font-size:13px; font-weight:700; color:var(--body); }
+    .wbody { padding:11px 13px 13px; }
+    .wcount { font-size:9.5px; color:var(--muted); font-weight:600; background:var(--faint); border:1px solid var(--border); border-radius:20px; padding:2px 8px; }
+    .pd-grid {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px 22px;
+    }
+    .pd-cell {
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+    .pd-label {
+      font-size:11px;
+      color:var(--muted);
+    }
+    .pd-val {
+      font-size:13px;
+      font-weight:700;
+      color:var(--dark);
+      line-height:1.35;
+    }
+    .widget-action-end {
+      display:flex;
+      justify-content:flex-end;
+      margin-top:14px;
+    }
+    .widget-stack {
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .widget-kicker {
+      font-size:11px;
+      line-height:1.5;
+      color:var(--muted);
+    }
+    .summary-list {
+      display:flex;
+      flex-direction:column;
+    }
+    .summary-row {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      padding:9px 0;
+      border-bottom:1px solid #eef2f7;
+    }
+    .summary-row:last-child { border-bottom:none; }
+    .summary-label {
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+    .summary-value {
+      font-size:12.5px;
+      font-weight:700;
+      color:var(--dark);
+      text-align:right;
+      line-height:1.45;
+    }
+    .widget-chip-row {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:2px;
+    }
+    .widget-chip {
+      display:inline-flex;
+      align-items:center;
+      border-radius:999px;
+      padding:6px 10px;
+      background:#f8fafc;
+      border:1px solid var(--border);
+      color:var(--slate);
+      font-size:10.5px;
+      font-weight:700;
+      line-height:1;
+    }
+    .widget-note-strong {
+      font-size:12px;
+      font-weight:800;
+      color:var(--dark);
+      line-height:1.45;
+    }
+    .widget-subtle {
+      font-size:11px;
+      line-height:1.5;
+      color:var(--muted);
+    }
+    .btn-red {
+      min-width:172px;
+      height:36px;
+      border:none;
+      border-radius:8px;
+      background:var(--red);
+      color:#fff;
+      font-size:12px;
+      font-weight:700;
+      font-family:'Inter',sans-serif;
+      cursor:pointer;
+    }
+    .btn-red:hover { background:#96091f; }
+    .btn-outline-soft {
+      min-width:148px;
+      height:36px;
+      border-radius:8px;
+      border:1px solid var(--bstrong);
+      background:#fff;
+      color:var(--dark);
+      font-size:12px;
+      font-weight:700;
+      font-family:'Inter',sans-serif;
+      cursor:pointer;
+    }
+    .btn-outline-soft:hover {
+      border-color:#94a3b8;
+      background:#f8fafc;
+    }
+    .benefit-section {
+      padding:10px 0;
+      border-bottom:1px solid #eef2f7;
+    }
+    .benefit-section:last-child { border-bottom:none; }
+    .benefit-top-row,
+    .benefit-bottom-row {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .benefit-top-row { margin-bottom:8px; }
+    .benefit-name {
+      font-size:13px;
+      font-weight:800;
+      color:var(--dark);
+    }
+    .benefit-amt-group {
+      display:flex;
+      align-items:baseline;
+      gap:2px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .benefit-amt {
+      font-size:12px;
+      font-weight:800;
+      color:#0f766e;
+    }
+    .benefit-ugx,
+    .benefit-slash,
+    .benefit-expires {
+      font-size:11px;
+      color:var(--muted);
+    }
+    .benefit-bar {
+      height:10px;
+      border-radius:999px;
+      background:#eef2f7;
+      overflow:hidden;
+    }
+    .benefit-bar-fill {
+      height:100%;
+      border-radius:999px;
+      background:linear-gradient(90deg,#0ea5e9,#0f766e);
+    }
+    .benefit-active-text,
+    .benefit-expired-text {
+      font-size:11px;
+      font-weight:800;
+    }
+    .benefit-active-text { color:#059668; }
+    .benefit-expired-text { color:#ef4444; }
+    .clm-row {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      padding:10px 0;
+      border-bottom:1px solid #eef2f7;
+    }
+    .clm-row:last-child { border-bottom:none; }
+    .clm-left,
+    .clm-right {
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+    .clm-right { align-items:flex-end; text-align:right; }
+    .clm-id,
+    .clm-amt {
+      font-size:13px;
+      font-weight:800;
+      color:var(--dark);
+    }
+    .clm-meta {
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.4;
+    }
+    .txn-list {
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .txn-card {
+      border:1px solid var(--border);
+      border-radius:10px;
+      background:#fff;
+      padding:12px;
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      cursor:pointer;
+    }
+    .txn-card:hover { background:#f8fafc; }
+    .txn-left,
+    .txn-right {
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .txn-right { align-items:flex-end; text-align:right; }
+    .txn-date,
+    .txn-amt {
+      font-size:13px;
+      font-weight:800;
+      color:var(--dark);
+    }
+    .txn-time,
+    .txn-meta,
+    .txn-id-row {
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.4;
+    }
+    .btn-dl {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      height:30px;
+      padding:0 11px;
+      border-radius:8px;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--muted);
+      font-size:11px;
+      font-weight:700;
+      cursor:pointer;
+      font-family:'Inter',sans-serif;
+    }
+    .btn-dl:hover { background:#f8fafc; color:var(--dark); }
+    .txn-pagination {
+      margin-top:12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .pager-inline-text {
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.35;
+    }
+    .pager-inline-text strong {
+      color:var(--dark);
+      font-weight:800;
+    }
+    .pager-inline-arrows {
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    .pg-nav {
+      width:28px;
+      height:28px;
+      border-radius:6px;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--muted);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+    }
+    .pg-info {
+      text-align:center;
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.35;
+    }
+    .pg-info-main {
+      font-size:12px;
+      font-weight:800;
+      color:var(--dark);
+    }
+    .pg-info-sub {
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.4;
+    }
+    .no-data {
+      border:1px dashed var(--border);
+      border-radius:10px;
+      background:#fbfdff;
+      padding:18px 14px;
+      text-align:center;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.5;
+    }
+    .mcopy {
+      font-size:12px;
+      line-height:1.6;
+      color:var(--muted);
+      margin-bottom:14px;
+    }
+    .mlist {
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:12px;
+    }
+    .mlist-item {
+      border:1px solid #edf2f7;
+      border-radius:10px;
+      background:#fff;
+      padding:11px 12px;
+    }
+    .mlist-item strong {
+      display:block;
+      font-size:12px;
+      font-weight:800;
+      color:var(--dark);
+      margin-bottom:4px;
+    }
+    .mlist-item span {
+      display:block;
+      font-size:11px;
+      line-height:1.5;
+      color:var(--muted);
+    }
+    .mtag-row {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:12px;
+    }
+    .mtag {
+      display:inline-flex;
+      align-items:center;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#f8fafc;
+      border:1px solid var(--border);
+      font-size:10.5px;
+      font-weight:700;
+      color:var(--slate);
+      line-height:1;
+      font-family:'Inter',sans-serif;
+      cursor:pointer;
+      appearance:none;
+      -webkit-appearance:none;
+      transition:all .18s ease;
+    }
+    .mtag.is-active {
+      background:var(--blue);
+      border-color:var(--blue);
+      color:#fff;
+      box-shadow:0 10px 24px rgba(11,120,201,.14);
+    }
+
+    /* ── COMPACT TABLE ── */
+    .ctbl { width:100%; border-collapse:collapse; }
+    .ctbl th {
+      text-align:left; font-size:8.5px; color:var(--muted); font-weight:700;
+      text-transform:uppercase; letter-spacing:.5px; padding:0 8px 7px;
+      border-bottom:1.5px solid var(--border);
+    }
+    .ctbl td { padding:8px 8px; border-bottom:1px solid #f1f5f9; font-size:11.5px; vertical-align:middle; }
+    .ctbl tbody tr:last-child td { border-bottom:none; }
+    .ctbl tbody tr.clickable { cursor:pointer; }
+    .ctbl tbody tr.clickable:hover td { background:#f8fafc; }
+    .ctbl td.fw { font-weight:700; color:var(--dark); }
+    .ctbl td.mu { color:var(--muted); font-size:10.5px; }
+    .ctbl td.rt { text-align:right; }
+    .ctbl td.no-wrap { white-space:nowrap; }
+
+    /* ── BADGES ── */
+    .badge { display:inline-flex; align-items:center; font-size:8.5px; font-weight:700; padding:2px 7px; border-radius:4px; white-space:nowrap; }
+    .b-active  { background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; }
+    .b-renewal { background:#fefce8; color:#92400e; border:1px solid #fde68a; }
+    .b-expired { background:#fef2f2; color:#dc2626; border:1px solid #fecaca; }
+    .b-paid    { background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; }
+    .b-pending { background:#fffbeb; color:#92400e; border:1px solid #fde68a; }
+    .b-settled { background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; }
+    .b-review  { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
+    .b-success { background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; }
+    .b-pr      { background:#fffbeb; color:#92400e; border:1px solid #fde68a; }
+    .b-ok      { background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; }
+    .b-no      { background:#fef2f2; color:#dc2626; border:1px solid #fecaca; }
+
+    /* ── PAGINATION ── */
+    .pgrow { display:flex; align-items:center; justify-content:space-between; padding:8px 0 0; border-top:1px solid var(--border); margin-top:6px; }
+    .pgtext { font-size:9.5px; color:var(--muted); }
+    .pgtext strong { color:var(--slate); }
+    .pgarr { display:flex; gap:3px; }
+    .pgbtn { width:22px; height:22px; border-radius:4px; border:1px solid var(--border); background:#fff; cursor:pointer; font-size:13px; color:var(--muted); display:flex; align-items:center; justify-content:center; font-family:'Inter',sans-serif; }
+    .pgbtn:hover:not(:disabled) { background:var(--faint); color:var(--dark); }
+    .pgbtn:disabled { opacity:.3; cursor:not-allowed; }
+
+    /* ── COMMISSION FOOTER ── */
+    .sched-foot { display:flex; justify-content:space-between; padding-top:10px; border-top:1px solid var(--border); margin-top:8px; flex-wrap:wrap; gap:6px; }
+    .sn { font-size:10px; color:var(--muted); line-height:1.6; }
+    .sn strong { color:var(--dark); }
+
+    /* ── BUTTONS ── */
+    .btn-sm {
+      display:inline-flex; align-items:center; gap:4px; padding:5px 10px;
+      border-radius:6px; font-family:'Inter',sans-serif; font-size:9.5px; font-weight:700;
+      cursor:pointer; border:none; white-space:nowrap; transition:background .15s;
+    }
+    .bs-red  { background:var(--red); color:#fff; }
+    .bs-red:hover  { background:#96091f; }
+    .bs-out  { background:#fff; color:var(--red); border:1.5px solid var(--red); }
+    .bs-out:hover  { background:#fff5f6; }
+
+    /* ── eFRIS UPLOAD ── */
+    .fpick {
+      display:flex; align-items:center; gap:8px; background:var(--faint);
+      border:1px solid var(--border); border-radius:7px; padding:8px 10px; margin-bottom:10px;
+    }
+    .fpick-name { font-size:10.5px; color:var(--muted); flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+    .efform { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+    .eflbl { font-size:8.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; display:block; margin-bottom:3px; }
+    .efin, .efsel {
+      width:100%; padding:6px 8px; border:1.5px solid var(--bstrong); border-radius:5px;
+      font-size:11px; font-family:'Inter',sans-serif; color:var(--body); background:#fff; outline:none;
+    }
+    .efin:focus, .efsel:focus { border-color:#059668; }
+    .efbtns { display:flex; justify-content:flex-end; gap:7px; margin-top:10px; }
+    .efbtns button { flex:none; min-width:150px; padding:8px 14px; border-radius:6px; font-family:'Inter',sans-serif; font-size:11px; font-weight:700; cursor:pointer; }
+    .efbtns .sub { background:var(--red); color:#fff; border:none; }
+    .efbtns .sub:hover { background:#96091f; }
+    .notif { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:7px; padding:9px 11px; font-size:11px; color:#166534; display:none; gap:7px; align-items:flex-start; margin-top:10px; }
+    .notif.show { display:flex; }
+
+    /* eFRIS history rows */
+    .erow {
+      border:1px solid var(--border);
+      border-radius:10px;
+      background:#fff;
+      padding:12px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+    }
+    .erow + .erow { margin-top:10px; }
+    .eid  { font-size:13px; font-weight:800; color:var(--dark); }
+    .emeta { font-size:11px; color:var(--muted); line-height:1.4; margin-top:4px; }
+    .eamt { font-size:13px; font-weight:800; color:var(--dark); text-align:right; margin-bottom:4px; }
+
+    /* ── MODAL ── */
+    .modal-overlay { display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,.42); align-items:center; justify-content:center; }
+    .modal-overlay.open { display:flex; }
+    .modal-box { background:#fff; border-radius:12px; width:600px; max-width:95vw; max-height:88vh; overflow-y:auto; padding:28px 30px 30px; position:relative; box-shadow:0 20px 60px rgba(0,0,0,.15); }
+    .mhead { display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; }
+    .mtitle { font-size:17px; font-weight:700; color:var(--dark); }
+    .mclose { background:none; border:none; cursor:pointer; font-size:20px; color:#6b7280; padding:2px 8px; border-radius:4px; }
+    .mclose:hover { color:var(--dark); background:#f3f4f6; }
+    .msect { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; }
+    .mgrid { display:grid; grid-template-columns:1fr 1fr; gap:0; border:1px solid var(--border); border-radius:8px; overflow:hidden; margin-bottom:16px; }
+    .mfield { padding:10px 12px; border-bottom:1px solid var(--border); }
+    .mfield:nth-child(odd) { border-right:1px solid var(--border); }
+    .mfield:nth-last-child(-n+2) { border-bottom:none; }
+    .mfield.full { grid-column:1/-1; border-right:none; }
+    .mlbl { font-size:9.5px; font-weight:600; color:#0d9488; display:block; margin-bottom:2px; }
+    .mval { font-size:12.5px; font-weight:700; color:var(--dark); }
+
+    /* ── FOOTER ── */
+    .footer-pay { background:#fff; text-align:center; padding:8px 16px; font-size:11.6px; color:#000; display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; }
+    .footer-bar { background:#1a1a1a; display:flex; align-items:center; justify-content:space-between; padding:10px 48px; font-size:13.3px; color:#fff; flex-wrap:wrap; gap:8px; }
+    .footer-bar a { color:#fff; text-decoration:none; }
+    .footer-bar a:hover { text-decoration:underline; }
+    .flinks { display:flex; align-items:center; gap:16px; }
+    .fdiv { width:1px; height:14px; background:rgba(255,255,255,.4); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width:1280px) {
+      .ops-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+      .client-grid,
+      .client-widget-cols { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width:1100px) {
+      .grid3 { grid-template-columns:1fr 1fr; }
+      .client-shell { grid-template-columns:1fr; }
+      .agent-kpi-bar { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+      .agent-kpi-item:nth-child(2) { border-right:none; }
+      .agent-kpi-item:nth-child(-n+2) { border-bottom:1px solid var(--border); }
+    }
+    @media (max-width:700px)  {
+      .grid3, .ops-grid, .client-grid, .client-widget-cols { grid-template-columns:1fr; }
+      .wrap { padding:0 14px; }
+      .efform { grid-template-columns:1fr; }
+      .agent-kpi-bar { grid-template-columns:1fr; }
+      .agent-kpi-item { border-right:none; border-bottom:1px solid var(--border); padding:15px 16px; }
+      .agent-kpi-item:last-child { border-bottom:none; }
+      .agent-kpi-val { font-size:24px; }
+      .client-mini-kpis { grid-template-columns:1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero-wrap">
+  <div class="hero">
+    <img class="hero-bg-img" src="https://kora.nxt.pe/1-static/assets-v1/britamBanner.png" alt="Britam" />
+    <a href="index.html" class="hero-logo" aria-label="Go to home page">
+      <img src="https://lh3.googleusercontent.com/DY7OsM7rCH5pqUBTXJZAEfv21SOAr2bzXdmRuHykczCliM6oFxlKJSK6umIFtA2PJsIgqHmZT98QmAlVs_tozVwkyJJItoQur6B1=e365-pa-nu-s0-rw" alt="Britam" />
+    </a>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="page-wrap">
+  <div class="wrap">
+    <div class="hrow">
+      <div class="hleft">
+        <a class="btn-back" href="index.html">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 5-7 7 7 7"/></svg>Home
+        </a>
+        <span style="color:#e5e7eb">|</span>
+        <h1 id="agentName">Agent Dashboard</h1>
+        <span class="pill pill-g" id="agentCode"></span>
+        <span class="pill pill-b">Intermediary</span>
+      </div>
+      <button class="btn-logout" onclick="logoutPortal()" title="Logout">
+        <svg width="19" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+
+    <div class="agent-kpi-bar" id="agentKpiBar"></div>
+    <div class="panel" id="opsArea"></div>
+    <div class="panel" id="clientWorkspaceArea"></div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detailModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="mhead">
+      <span class="mtitle" id="modalTitle"></span>
+      <button class="mclose" onclick="closeModal()">&#x2715;</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer-pay">
+  <span>Pay using :</span>
+  <img src="https://checkout.nxt.pe/1-static/assets-v1/Airtel_logo_red.jpeg" alt="Airtel Money" style="height:22px;width:auto;object-fit:contain;border-radius:3px" />
+  <svg width="60" height="22" viewBox="0 0 160 56" fill="none"><rect width="160" height="56" rx="8" fill="#FFCC00"/><rect x="4" y="4" width="48" height="48" rx="8" fill="#003087"/><path d="M14 38 L28 14 L36 28 L44 14 L52 38" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><text x="60" y="38" font-family="Arial,sans-serif" font-size="26" font-weight="700" fill="#003087">MoMo</text></svg>
+  <span style="color:#9ca3af;margin:0 4px">|</span>
+  <span style="color:#808080;font-size:11px">Powered By</span>
+  <img src="https://checkout.nxt.pe/1-static/assets-v1/nxtpeLogo.png" alt="nxtpe" style="height:20px;width:auto;object-fit:contain" />
+</div>
+<div class="footer-bar">
+  <span>You are accessing this page securely.</span>
+  <div class="flinks">
+    <span>Copyright &copy; 2024 Britam. All Rights Reserved.</span>
+    <div class="fdiv"></div><a href="#">Terms of Use</a>
+    <div class="fdiv"></div><a href="#">Privacy Policy</a>
+  </div>
+</div>
+
+<div class="site-ai-wrap">
+  <button class="site-ai-pill" onclick="siteAiOpenChat()" aria-label="Open support chat">
+    <span class="site-ai-dot"></span>
+    <span>Hi, I'm here to help you.</span>
+  </button>
+  <div id="site-ai-drawer" class="site-ai-drawer site-ai-hidden" aria-label="Britam Support">
+    <div class="site-ai-head">
+      <div class="site-ai-brand">
+        <div class="site-ai-avatar">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 16 0"/><path d="M3 13v3a2 2 0 0 0 2 2h2v-7H5a2 2 0 0 0-2 2Z"/><path d="M21 13v3a2 2 0 0 1-2 2h-2v-7h2a2 2 0 0 1 2 2Z"/><path d="M9 18a3 3 0 0 0 3 3h2"/></svg>
+        </div>
+        <div>
+          <h3 class="site-ai-title">Britam Support</h3>
+          <p class="site-ai-subtitle">Available 24/7 to help you</p>
+        </div>
+      </div>
+      <button class="site-ai-min" onclick="siteAiCloseChat()" aria-label="Minimize support chat">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </div>
+    <div id="site-ai-messages" class="site-ai-messages"></div>
+    <div class="site-ai-composer">
+      <div class="site-ai-row">
+        <input id="site-ai-input" class="site-ai-input" type="text" placeholder="Ask about clients, commissions, claims..." />
+        <button class="site-ai-send" onclick="siteAiSend()" aria-label="Send message">
+          <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+        </button>
+      </div>
+      <p class="site-ai-footnote">For urgent matters, please contact Britam directly.</p>
+    </div>
+  </div>
+  <button id="site-ai-btn" class="site-ai-btn" onclick="siteAiToggle()" aria-label="Open support chat">
+    <span id="site-ai-open-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 16 0"/><path d="M3 13v3a2 2 0 0 0 2 2h2v-7H5a2 2 0 0 0-2 2Z"/><path d="M21 13v3a2 2 0 0 1-2 2h-2v-7h2a2 2 0 0 1 2 2Z"/><path d="M9 18a3 3 0 0 0 3 3h2"/></svg>
+      <span class="site-ai-pulse"></span>
+    </span>
+    <span id="site-ai-close-icon" class="site-ai-hidden">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </span>
+  </button>
+</div>
+
+<script>
+function logoutPortal() {
+  localStorage.removeItem('britamPortalRole');
+  window.location.href = 'index.html';
+}
+// ════════════════════════════════
+//  DATA
+// ════════════════════════════════
+const A = {
+  name:"Robert Katende", code:"AGT-00234",
+  kpi:{ active:7, renewal:2, expired:0, premium:"UGX 4,895,000", commission:"UGX 284,000", pending:"UGX 121,000" },
+  schedules:[
+    { period:"Mar 2026", policies:9, gross:"UGX 2,840,000", rate:"10%", commission:"UGX 284,000", status:"Paid"    },
+    { period:"Feb 2026", policies:8, gross:"UGX 2,410,000", rate:"10%", commission:"UGX 241,000", status:"Paid"    },
+    { period:"Jan 2026", policies:7, gross:"UGX 1,980,000", rate:"10%", commission:"UGX 198,000", status:"Paid"    },
+    { period:"Dec 2025", policies:6, gross:"UGX 1,540,000", rate:"10%", commission:"UGX 154,000", status:"Paid"    },
+    { period:"Nov 2025", policies:5, gross:"UGX 1,210,000", rate:"10%", commission:"UGX 121,000", status:"Pending" },
+  ],
+  claims:[
+    { id:"CLM-4421", client:"Sarah Namukasa",          policy:"POL-110023", product:"Motor Insurance",       filed:"12 Apr 2026", amount:"UGX 4,800,000",  status:"Pending"      },
+    { id:"CLM-4398", client:"Sarah Namukasa",          policy:"POL-110041", product:"Personal Accident",     filed:"28 Mar 2026", amount:"UGX 1,200,000",  status:"Settled"      },
+    { id:"CLM-4310", client:"Grace Atwine",            policy:"POL-110078", product:"Fire Insurance",        filed:"03 Apr 2026", amount:"UGX 12,500,000", status:"Under Review" },
+    { id:"CLM-4290", client:"Kintu Logistics Ltd",     policy:"POL-110055", product:"Marine Insurance",      filed:"26 Mar 2026", amount:"UGX 8,600,000",  status:"Under Review" },
+    { id:"CLM-4275", client:"Kintu Logistics Ltd",     policy:"POL-110039", product:"Liability Insurance",   filed:"19 Mar 2026", amount:"UGX 5,000,000",  status:"Pending"      },
+    { id:"CLM-4241", client:"Kintu Logistics Ltd",     policy:"POL-110101", product:"Theft Insurance",       filed:"11 Mar 2026", amount:"UGX 3,200,000",  status:"Settled"      },
+    { id:"CLM-4210", client:"Nile Engineering Ltd",    policy:"POL-110088", product:"Engineering Insurance", filed:"07 Mar 2026", amount:"UGX 14,300,000", status:"Pending"      },
+    { id:"CLM-4196", client:"Nile Engineering Ltd",    policy:"POL-109988", product:"Workers Compensation",  filed:"01 Mar 2026", amount:"UGX 2,450,000",  status:"Under Review" },
+    { id:"CLM-4172", client:"Pearl Aviation Services", policy:"POL-110130", product:"Aviation Insurance",    filed:"18 Feb 2026", amount:"UGX 24,000,000", status:"Pending"      },
+  ],
+  payments:[
+    { date:"10 Apr 2026", client:"Sarah Namukasa",          policy:"POL-110023", product:"Motor Insurance",       amount:"UGX 320,000",  method:"Airtel Money",  status:"Successful" },
+    { date:"04 Apr 2026", client:"Sarah Namukasa",          policy:"POL-110041", product:"Personal Accident",     amount:"UGX 185,000",  method:"MTN MoMo",      status:"Successful" },
+    { date:"02 Apr 2026", client:"Grace Atwine",            policy:"POL-110078", product:"Fire Insurance",        amount:"UGX 540,000",  method:"Bank Transfer", status:"Successful" },
+    { date:"28 Mar 2026", client:"Kintu Logistics Ltd",     policy:"POL-110055", product:"Marine Insurance",      amount:"UGX 250,000",  method:"Airtel Money",  status:"Pending"    },
+    { date:"22 Mar 2026", client:"Kintu Logistics Ltd",     policy:"POL-110039", product:"Liability Insurance",   amount:"UGX 430,000",  method:"Bank Transfer", status:"Successful" },
+    { date:"18 Mar 2026", client:"Kintu Logistics Ltd",     policy:"POL-110101", product:"Theft Insurance",       amount:"UGX 210,000",  method:"MTN MoMo",      status:"Successful" },
+    { date:"12 Mar 2026", client:"Nile Engineering Ltd",    policy:"POL-110088", product:"Engineering Insurance", amount:"UGX 440,000",  method:"Bank Transfer", status:"Pending"    },
+    { date:"09 Mar 2026", client:"Nile Engineering Ltd",    policy:"POL-109988", product:"Workers Compensation",  amount:"UGX 470,000",  method:"Airtel Money",  status:"Successful" },
+    { date:"05 Mar 2026", client:"Pearl Aviation Services", policy:"POL-110130", product:"Aviation Insurance",    amount:"UGX 625,000",  method:"Bank Transfer", status:"Pending"    },
+  ],
+  efris:[
+    { id:"EFR-0091", period:"Mar 2026", date:"01 Apr 2026", amount:"UGX 284,000", status:"Pending Finance Review" },
+    { id:"EFR-0078", period:"Feb 2026", date:"02 Mar 2026", amount:"UGX 241,000", status:"Processed"              },
+    { id:"EFR-0061", period:"Jan 2026", date:"03 Feb 2026", amount:"UGX 198,000", status:"Processed"              },
+    { id:"EFR-0049", period:"Dec 2025", date:"05 Jan 2026", amount:"UGX 154,000", status:"Processed"              },
+  ],
+  policies:[
+    { id:"POL-110023", client:"Sarah Namukasa",          product:"Motor Insurance",       status:"ACTIVE",  premium:"UGX 320,000",  due:"15 Apr 2026", freq:"Annual", startDate:"15 Apr 2025", sumCovered:"UGX 85,000,000",   tag:"Motor"        },
+    { id:"POL-110041", client:"Sarah Namukasa",          product:"Personal Accident",     status:"ACTIVE",  premium:"UGX 185,000",  due:"20 Apr 2026", freq:"Annual", startDate:"20 Apr 2025", sumCovered:"UGX 50,000,000",   tag:"Accident"     },
+    { id:"POL-110078", client:"Grace Atwine",            product:"Fire Insurance",        status:"ACTIVE",  premium:"UGX 540,000",  due:"30 Apr 2026", freq:"Annual", startDate:"30 Apr 2025", sumCovered:"UGX 420,000,000",  tag:"Fire"         },
+    { id:"POL-110055", client:"Kintu Logistics Ltd",     product:"Marine Insurance",      status:"RENEWAL", premium:"UGX 610,000",  due:"08 Apr 2026", freq:"Annual", startDate:"08 Apr 2025", sumCovered:"UGX 260,000,000",  tag:"Marine"       },
+    { id:"POL-110039", client:"Kintu Logistics Ltd",     product:"Liability Insurance",   status:"ACTIVE",  premium:"UGX 430,000",  due:"12 Apr 2026", freq:"Annual", startDate:"12 Apr 2025", sumCovered:"UGX 150,000,000",  tag:"Liability"    },
+    { id:"POL-110101", client:"Kintu Logistics Ltd",     product:"Theft Insurance",       status:"ACTIVE",  premium:"UGX 210,000",  due:"18 Apr 2026", freq:"Annual", startDate:"18 Apr 2025", sumCovered:"UGX 90,000,000",   tag:"Theft"        },
+    { id:"POL-110088", client:"Nile Engineering Ltd",    product:"Engineering Insurance", status:"ACTIVE",  premium:"UGX 880,000",  due:"05 Apr 2026", freq:"Annual", startDate:"05 Apr 2025", sumCovered:"UGX 980,000,000",  tag:"Engineering"  },
+    { id:"POL-109988", client:"Nile Engineering Ltd",    product:"Workers Compensation",  status:"ACTIVE",  premium:"UGX 470,000",  due:"01 May 2026", freq:"Annual", startDate:"01 May 2025", sumCovered:"UGX 120,000,000",  tag:"Workers Comp" },
+    { id:"POL-110130", client:"Pearl Aviation Services", product:"Aviation Insurance",    status:"RENEWAL", premium:"UGX 1,250,000", due:"10 Apr 2026", freq:"Annual", startDate:"10 Apr 2025", sumCovered:"UGX 2,400,000,000", tag:"Aviation"     },
+  ],
+};
+
+const POLICY_MODELS = {
+  "POL-110023": {
+    overview:[["Policy Term","Annual"],["Territory","Uganda"],["Cover Type","Comprehensive"],["Vehicle Count","1 vehicle"]],
+    coverage:{
+      title:"Coverage Snapshot",
+      summary:[["Own Damage","Accidental damage, fire, theft"],["Third-Party Limit","UGX 100,000,000"],["Add-ons","Towing, rescue, windscreen"],["Proof","Digital sticker active"]],
+      sections:["Comprehensive cover for private use","Windscreen and towing support active","Cross-border use requires approval"]
+    },
+    asset:{
+      title:"Vehicle & Proof",
+      summary:[["Registration","UBQ 348K"],["Vehicle","Toyota RAV4 2022"],["Usage","Private"],["Sticker Valid","15 Apr 2026"]],
+      details:[["Garaging","Ntinda, Kampala"],["Engine / VIN","2AR-FE / JTMR43FV2ND011023"],["Proof of Insurance","Digital sticker and certificate ready"],["Change Requests","Vehicle use, accessories, ownership updates"]]
+    },
+    payments:{
+      summary:[["Annual Premium","UGX 320,000"],["Amount Paid","UGX 320,000"],["Outstanding","Nil"],["Payment Plan","Cash paid in full"]],
+      schedule:["Full payment received on 10 Apr 2026","Receipt and schedule ready to download"]
+    },
+    claims:{
+      summary:[["Quick Route","Report accident or theft"],["Required Evidence","Police abstract, photos, repair estimate"],["Latest Claim","Own damage claim pending"],["Claim Desk","Motor claims desk"]],
+      checklist:["Motor claim form","Driver license and logbook copy","Police abstract and accident photos","Repair estimate or assessor report"]
+    },
+    renewal:{
+      summary:[["Renewal Status","Ready for quote"],["Renewal Driver","Vehicle value and claims history"],["Pending Task","Confirm current vehicle use"],["Alert","Digital sticker reissue if details change"]],
+      tasks:["Review vehicle value before renewal","Confirm no ownership change","Clear any pending claim info requests"]
+    },
+    documents:{
+      count:4,
+      copy:"Certificate, schedule, sticker, and claim forms are ready for this motor policy.",
+      items:["Motor schedule","Certificate of insurance","Digital third-party sticker","Motor claim checklist"]
+    }
+  },
+  "POL-110041": {
+    overview:[["Policy Term","Annual"],["Plan","Family Accident Plus"],["Covered Lives","2 people"],["Territory","Uganda and regional travel"]],
+    coverage:{
+      title:"Benefits Snapshot",
+      summary:[["Accidental Death","UGX 50,000,000"],["Permanent Disability","Up to full sum assured"],["Medical Expenses","UGX 5,000,000"],["Hospital Cash","Included"]],
+      sections:["Emergency evacuation included","Beneficiary details on file","Medical certificate needed for most claims"]
+    },
+    asset:{
+      title:"Covered People",
+      summary:[["Main Insured","Sarah Namukasa"],["Additional Member","Nathan Namukasa"],["Beneficiary","Daniel Namukasa"],["Occupation","Office-based role"]],
+      details:[["Plan Option","Family Accident Plus"],["Entry Age Band","Adult and child"],["Waiting Period","None for accidental events"],["Update Request","Beneficiary and contact changes available"]]
+    },
+    payments:{
+      summary:[["Annual Premium","UGX 185,000"],["Amount Paid","UGX 185,000"],["Outstanding","Nil"],["Payment Plan","Cash paid in full"]],
+      schedule:["Full payment received on 04 Apr 2026","Medical benefit schedule ready to share"]
+    },
+    claims:{
+      summary:[["Quick Route","Start accident claim"],["Required Evidence","Medical certificate and receipts"],["Latest Claim","Medical reimbursement settled"],["Claim Desk","Personal accident desk"]],
+      checklist:["Accident narrative","Medical practitioner's certificate","Treatment receipts and bills","Police abstract if incident involved authorities"]
+    },
+    renewal:{
+      summary:[["Renewal Status","On track"],["Renewal Driver","Plan option and covered lives"],["Pending Task","Confirm beneficiary details"],["Alert","Set reminder before 20 Apr 2026"]],
+      tasks:["Review beneficiary details","Confirm covered members still active","Check medical limit preference before renewal"]
+    },
+    documents:{
+      count:4,
+      copy:"Schedule, certificate, and medical claim forms are ready for this personal accident cover.",
+      items:["Personal accident schedule","Certificate of cover","Medical claim form","Benefit summary"]
+    }
+  },
+  "POL-110078": {
+    overview:[["Policy Term","Annual"],["Property Sites","1 location"],["Business Interruption","Included"],["Territory","Uganda"]],
+    coverage:{
+      title:"Coverage Snapshot",
+      summary:[["Buildings","UGX 250,000,000"],["Stock and Contents","UGX 120,000,000"],["Plant and Fixtures","UGX 50,000,000"],["Perils","Fire, lightning, explosion"]],
+      sections:["Business interruption extension active","Reinstatement basis applied","Capital additions must be declared"]
+    },
+    asset:{
+      title:"Sites & Values",
+      summary:[["Site","Najeera hardware branch"],["Occupancy","Retail and storage"],["Sum Insured","UGX 420,000,000"],["Fire Safety","Survey completed"]],
+      details:[["Construction Type","Permanent block"],["Address","Najeera, Kampala"],["Risk Survey","Completed 22 Mar 2026"],["Capital Additions","None declared this term"]]
+    },
+    payments:{
+      summary:[["Annual Premium","UGX 540,000"],["Amount Paid","UGX 540,000"],["Outstanding","Nil"],["Payment Plan","Cash paid in full"]],
+      schedule:["Full payment received on 02 Apr 2026","Receipt and fire survey report available"]
+    },
+    claims:{
+      summary:[["Quick Route","Notify property loss"],["Required Evidence","Inventory, photos, repair quotes"],["Latest Claim","Fire loss under review"],["Claim Desk","Property claims desk"]],
+      checklist:["Incident report and loss narrative","Itemized damaged stock list","Repair or replacement quotations","Police report where required"]
+    },
+    renewal:{
+      summary:[["Renewal Status","Ready for review"],["Renewal Driver","Site value and safety compliance"],["Pending Task","Confirm stock values"],["Alert","Inspection certificate expires soon"]],
+      tasks:["Upload latest fire safety certificate","Confirm stock peak season values","Declare any building alterations"]
+    },
+    documents:{
+      count:5,
+      copy:"Policy wording, survey report, and safety certificates are stored with this fire policy.",
+      items:["Fire policy schedule","Certificate of insurance","Fire survey report","Safety compliance certificate","Property claim form"]
+    }
+  },
+  "POL-110055": {
+    overview:[["Policy Type","Open cover"],["Coverage Basis","Warehouse to warehouse"],["Territory","Regional transit"],["Declarations","Required per shipment"]],
+    coverage:{
+      title:"Coverage Snapshot",
+      summary:[["Base Perils","Loss, damage, pilferage"],["Optional Clauses","Storage and transshipment"],["War / Strikes","Included"],["Claim Support","Survey request available"]],
+      sections:["Open cover declarations are active","Regional road and sea movements included","Undeclared shipments stay out of scope"]
+    },
+    asset:{
+      title:"Shipment Register",
+      summary:[["Latest Shipment","Mombasa to Kampala"],["Value Insured","UGX 260,000,000"],["Packing","Containerized"],["Status","2 declarations pending"]],
+      details:[["Mode","Road and sea"],["Invoice Reference","KL-INV-2038"],["Carrier","Lake Freight East Africa"],["Port / Warehouse","Mombasa to Namanve"]]
+    },
+    payments:{
+      summary:[["Annual Premium","UGX 610,000"],["Amount Paid","UGX 250,000"],["Outstanding","UGX 360,000"],["Payment Plan","IPF active • 2 of 3 instalments"]],
+      schedule:["Next instalment due on 18 Apr 2026","Missed declarations may affect renewal"]
+    },
+    claims:{
+      summary:[["Quick Route","Notify cargo loss"],["Required Evidence","Invoice, packing list, survey"],["Latest Claim","Transit damage under review"],["Claim Desk","Marine cargo desk"]],
+      checklist:["Bill of lading or transit note","Invoice and packing list","Survey report and photos","Correspondence with carrier"]
+    },
+    renewal:{
+      summary:[["Renewal Status","In renewal"],["Renewal Driver","Declared vs actual shipment values"],["Pending Task","Reconcile March declarations"],["Alert","Outstanding instalment due"]],
+      tasks:["Upload missing shipment declarations","Reconcile actual cargo values","Clear outstanding premium before renewal bind"]
+    },
+    documents:{
+      count:5,
+      copy:"Declarations, schedules, and marine claim documents are grouped under this marine policy.",
+      items:["Marine schedule","Declarations archive","Open cover endorsement","Marine claim form","Latest invoice"]
+    }
+  },
+  "POL-110039": {
+    overview:[["Policy Term","Annual"],["Coverage Sections","Public liability"],["Territory","Uganda"],["Insured Premises","2 sites"]],
+    coverage:{
+      title:"Limits Snapshot",
+      summary:[["Any One Event","UGX 150,000,000"],["Any One Period","UGX 300,000,000"],["Defence Costs","Included"],["Extensions","Food and car park liability"]],
+      sections:["Limits apply per event and annual period","Exposure updates affect renewal pricing","Client certificates available for contracts"]
+    },
+    asset:{
+      title:"Exposure Profile",
+      summary:[["Business Type","Warehousing and delivery"],["Employees","48 staff"],["Premises Area","2,400 sqm"],["Risk Flag","Forklifts in use"]],
+      details:[["Annual Wages","UGX 420,000,000"],["Fire Precautions","Hydrants and extinguishers"],["Pollution Exposure","Low"],["Special Risk","Loading bay third-party exposure"]]
+    },
+    payments:{
+      summary:[["Annual Premium","UGX 430,000"],["Amount Paid","UGX 430,000"],["Outstanding","Nil"],["Payment Plan","Cash paid in full"]],
+      schedule:["Full payment received on 22 Mar 2026","Client certificate can be issued on demand"]
+    },
+    claims:{
+      summary:[["Quick Route","Start third-party claim"],["Required Evidence","Demand letter, witness, police ref"],["Latest Claim","Third-party injury pending"],["Claim Desk","Liability desk"]],
+      checklist:["Incident narrative and witness details","Third-party demand or summons","Police reference if available","Photos and correspondence trail"]
+    },
+    renewal:{
+      summary:[["Renewal Status","Open for review"],["Renewal Driver","Claims history and wage exposure"],["Pending Task","Confirm premises area"],["Alert","Client certificate renewal needed"]],
+      tasks:["Review wage and turnover exposure","Confirm premises occupancy","Issue updated contract certificate if requested"]
+    },
+    documents:{
+      count:4,
+      copy:"Certificates, endorsements, and third-party claim papers are ready for this liability cover.",
+      items:["Liability schedule","Certificate of insurance","Extension endorsement","Third-party claim form"]
+    }
+  },
+  "POL-110101": {
+    overview:[["Policy Term","Annual"],["Sub-cover","Burglary and contents"],["Premises","1 warehouse"],["Territory","Uganda"]],
+    coverage:{
+      title:"Coverage Snapshot",
+      summary:[["Stock and Equipment","UGX 90,000,000"],["Property Damage","Included after forcible entry"],["Security Warranty","Alarm and guard cover"],["Transit Add-on","Not enabled"]],
+      sections:["Safe custody conditions apply","Security posture drives renewals","Inventory accuracy matters at claim stage"]
+    },
+    asset:{
+      title:"Security & Property",
+      summary:[["Premises","Namanve storage unit"],["Security","Alarm, CCTV, guards"],["Safe Room","Yes"],["Compliance","Last inspection passed"]],
+      details:[["Stored Items","Electronics and accessories"],["Guard Arrangement","24/7 contracted guard"],["Access Control","Badge and lock system"],["Security Proof","Audit report uploaded"]]
+    },
+    payments:{
+      summary:[["Annual Premium","UGX 210,000"],["Amount Paid","UGX 210,000"],["Outstanding","Nil"],["Payment Plan","Cash paid in full"]],
+      schedule:["Full payment received on 18 Mar 2026","Security audit attached to this term"]
+    },
+    claims:{
+      summary:[["Quick Route","Notify burglary or theft"],["Required Evidence","Police report, inventory, photos"],["Latest Claim","Recovered stock claim settled"],["Claim Desk","Property theft desk"]],
+      checklist:["Police report and OB number","Inventory of stolen items","Purchase receipts or proforma","Photos and forced entry evidence"]
+    },
+    renewal:{
+      summary:[["Renewal Status","On track"],["Renewal Driver","Stock values and security posture"],["Pending Task","Confirm latest stock total"],["Alert","Guard contract expiry due for upload"]],
+      tasks:["Upload renewed guard contract","Confirm current stock ceiling","Declare any changes to security controls"]
+    },
+    documents:{
+      count:4,
+      copy:"Policy files, security audits, and theft claim forms are available for this risk.",
+      items:["Theft policy schedule","Certificate of insurance","Security audit report","Theft claim form"]
+    }
+  },
+  "POL-110088": {
+    overview:[["Policy Class","Contractors All Risks"],["Project Sites","2 active sites"],["Maintenance Period","Included"],["Territory","Uganda"]],
+    coverage:{
+      title:"Coverage Snapshot",
+      summary:[["Material Damage","Project works and temporary works"],["Third-Party Liability","UGX 250,000,000"],["Endorsements","Debris removal and transit"],["Premium Basis","Contract value declaration"]],
+      sections:["Project timeline controls cover period","Extensions and limits vary by site","Actual contract value drives renewal adjustment"]
+    },
+    asset:{
+      title:"Project & Equipment",
+      summary:[["Lead Project","Mukono water site"],["Estimated Contract Value","UGX 980,000,000"],["Plant Items","6 scheduled items"],["Inspection","Operator logs due"]],
+      details:[["Contract Period","05 Apr 2025 – 04 Apr 2026"],["Maintenance Cover","3 months"],["Main Contractor","Nile Engineering Ltd"],["Equipment Register","Mixers, compressors, pumps"]]
+    },
+    payments:{
+      summary:[["Annual Premium","UGX 880,000"],["Amount Paid","UGX 440,000"],["Outstanding","UGX 440,000"],["Payment Plan","IPF active • final instalment pending"]],
+      schedule:["Next instalment due on 16 Apr 2026","Actual contract value declaration pending before renewal"]
+    },
+    claims:{
+      summary:[["Quick Route","Notify site damage or liability"],["Required Evidence","Incident report, photos, repair quotes"],["Latest Claim","Site damage claim pending"],["Claim Desk","Engineering claims desk"]],
+      checklist:["Incident report and site photos","Repair quotations or assessor note","Third-party demand if liability involved","Evidence of immediate notification"]
+    },
+    renewal:{
+      summary:[["Renewal Status","Awaiting declarations"],["Renewal Driver","Actual contract value and extensions"],["Pending Task","Update project completion dates"],["Alert","Final instalment outstanding"]],
+      tasks:["Submit actual contract value","Confirm maintenance period extension","Upload latest operator competence logs"]
+    },
+    documents:{
+      count:5,
+      copy:"Schedules, site surveys, and engineering endorsements are grouped under this policy.",
+      items:["Engineering schedule","Site survey report","Equipment schedule","Endorsements register","Engineering claim form"]
+    }
+  },
+  "POL-109988": {
+    overview:[["Policy Term","Annual"],["Jurisdiction","Uganda"],["Covered Employees","86 staff"],["Excess","Nil"]],
+    coverage:{
+      title:"Statutory Cover Snapshot",
+      summary:[["Medical Expenses","Included"],["Funeral Expenses","Included"],["Transit to Work","Included where applicable"],["Employer Liability","Protected under policy"]],
+      sections:["Payroll estimates drive pricing","Regulatory forms must stay current","Claim evidence is HR-led"]
+    },
+    asset:{
+      title:"Employees & Payroll",
+      summary:[["Employee Classes","Plant, drivers, admin"],["Estimated Wages","UGX 1,200,000,000"],["Work Sites","2 active sites"],["Transport Flag","Company buses provided"]],
+      details:[["Roster Status","Updated on 01 Apr 2026"],["Payroll Return","Q1 uploaded"],["Safety Logs","March incident log pending"],["Coverage Basis","Named classes and wage bands"]]
+    },
+    payments:{
+      summary:[["Annual Premium","UGX 470,000"],["Amount Paid","UGX 470,000"],["Outstanding","Nil"],["Payment Plan","Cash paid in full"]],
+      schedule:["Full payment received on 09 Mar 2026","Wage return will drive next renewal quote"]
+    },
+    claims:{
+      summary:[["Quick Route","Report work injury"],["Required Evidence","Medical receipts, payslips, witness"],["Latest Claim","Work injury under review"],["Claim Desk","WIBA claims desk"]],
+      checklist:["Employer accident report","Medical receipts and sick-off sheets","Payslips before accident","Police abstract where required"]
+    },
+    renewal:{
+      summary:[["Renewal Status","Open"],["Renewal Driver","Actual wages and employee count"],["Pending Task","Submit updated wage return"],["Alert","Roster refresh due this month"]],
+      tasks:["Upload wage return","Confirm employee class changes","Share updated regulatory forms with HR"]
+    },
+    documents:{
+      count:5,
+      copy:"Payroll declarations, regulatory forms, and claim checklists sit under this workers compensation policy.",
+      items:["Workers compensation schedule","Certificate of insurance","Payroll declaration","Regulatory claim form","WIBA checklist"]
+    }
+  },
+  "POL-110130": {
+    overview:[["Policy Term","Annual"],["Package","Hull and liability"],["Aircraft Count","2 aircraft"],["Base of Operations","Entebbe"]],
+    coverage:{
+      title:"Coverage Modules",
+      summary:[["Hull Cover","Flight, taxiing, ground"],["Liability Limit","Single combined limit active"],["Airport Ops","Not included"],["Crew PA","Included"]],
+      sections:["Airworthiness and crew licence records are mandatory","Module changes affect underwriter review","High-value documentation stays centralised"]
+    },
+    asset:{
+      title:"Aircraft & Crew",
+      summary:[["Lead Aircraft","5X-PAK Cessna 208B"],["Hull Value","UGX 2,400,000,000"],["Airworthiness","Valid to 30 Jun 2026"],["Pilot Licences","2 expiring in 45 days"]],
+      details:[["Secondary Aircraft","5X-PAL Caravan"],["Approved Pilots","Capt. M. Kigozi, Capt. D. Otema"],["Crew Credentials","Updated 04 Apr 2026"],["Base","Entebbe Hangar 3"]]
+    },
+    payments:{
+      summary:[["Annual Premium","UGX 1,250,000"],["Amount Paid","UGX 625,000"],["Outstanding","UGX 625,000"],["Payment Plan","IPF active • final instalment due"]],
+      schedule:["Next instalment due on 20 Apr 2026","Renewal cannot bind until licence updates are complete"]
+    },
+    claims:{
+      summary:[["Quick Route","Notify hull or liability incident"],["Required Evidence","Incident report, maintenance logs"],["Latest Claim","Ground damage case pending"],["Claim Desk","Aviation claims desk"]],
+      checklist:["Immediate notification note","Incident and movement report","Maintenance or survey records","Regulatory correspondence"]
+    },
+    renewal:{
+      summary:[["Renewal Status","In renewal"],["Renewal Driver","Aircraft changes and crew licences"],["Pending Task","Upload renewed pilot licences"],["Alert","Airworthiness certificate nearing expiry"]],
+      tasks:["Upload pilot licence renewals","Confirm aircraft register changes","Clear outstanding instalment before quote bind"]
+    },
+    documents:{
+      count:5,
+      copy:"Aircraft certificates, licences, and policy schedules are ready for aviation review.",
+      items:["Aviation schedule","Aircraft register","Airworthiness certificate","Pilot licence file","Aviation claim form"]
+    }
+  }
+};
+
+const IPF_DEFAULTS = {
+  "POL-110023": { status:"NOT_ACTIVE", suggestedInstalments:3, suggestedDepositPct:30, note:"No active instalment plan for this policy yet." },
+  "POL-110041": { status:"NOT_ACTIVE", suggestedInstalments:2, suggestedDepositPct:30, note:"Personal accident cover is currently paid in full." },
+  "POL-110078": { status:"NOT_ACTIVE", suggestedInstalments:3, suggestedDepositPct:35, note:"This fire policy is currently paid in full." },
+  "POL-110055": {
+    status:"ACTIVE",
+    plan:"3-part instalment plan",
+    deposit:"UGX 250,000",
+    financed:"UGX 360,000",
+    nextDue:"18 Apr 2026",
+    monthly:"UGX 180,000",
+    note:"Instalment plan is active and linked to this marine policy.",
+    schedule:["Deposit paid on 28 Mar 2026","Instalment 1 due on 18 Apr 2026","Final instalment due on 18 May 2026"]
+  },
+  "POL-110039": { status:"NOT_ACTIVE", suggestedInstalments:2, suggestedDepositPct:30, note:"Liability cover is currently paid in full." },
+  "POL-110101": { status:"NOT_ACTIVE", suggestedInstalments:2, suggestedDepositPct:30, note:"Theft cover is currently paid in full." },
+  "POL-110088": {
+    status:"ACTIVE",
+    plan:"2-part instalment plan",
+    deposit:"UGX 440,000",
+    financed:"UGX 440,000",
+    nextDue:"16 Apr 2026",
+    monthly:"UGX 440,000",
+    note:"Final instalment is still outstanding for this engineering policy.",
+    schedule:["Deposit paid on 12 Mar 2026","Final instalment due on 16 Apr 2026"]
+  },
+  "POL-109988": { status:"NOT_ACTIVE", suggestedInstalments:2, suggestedDepositPct:25, note:"Workers compensation is currently paid in full." },
+  "POL-110130": {
+    status:"ACTIVE",
+    plan:"2-part instalment plan",
+    deposit:"UGX 625,000",
+    financed:"UGX 625,000",
+    nextDue:"20 Apr 2026",
+    monthly:"UGX 625,000",
+    note:"Aviation instalment plan is active and awaiting the final payment.",
+    schedule:["Deposit paid on 05 Mar 2026","Final instalment due on 20 Apr 2026"]
+  }
+};
+
+let ipfState = JSON.parse(JSON.stringify(IPF_DEFAULTS));
+let ipfDraft = null;
+
+// ════════════════════════════════
+//  PAGINATION
+// ════════════════════════════════
+let activeClient = 'ALL';
+let activeClientPolicyId = null;
+
+function getAgentClients() {
+  return [...new Set(A.policies.map(p => p.client))].sort((a, b) => a.localeCompare(b));
+}
+
+function getFilteredAgentClients(value) {
+  const q = String(value || '').trim().toLowerCase();
+  const all = ['ALL', ...getAgentClients()];
+  if (!q) return all;
+  return all.filter(name => (name === 'ALL' ? 'all clients' : name).toLowerCase().includes(q));
+}
+
+function renderAgentClientMenu(value, open = true) {
+  const menu = document.getElementById('agentClientMenu');
+  if (!menu) return;
+  const matches = getFilteredAgentClients(value);
+  menu.innerHTML = matches.length
+    ? matches.map(name => `
+        <button
+          type="button"
+          class="client-option ${(activeClient === name || (activeClient === 'ALL' && name === 'ALL')) ? 'is-active' : ''}"
+          onmousedown="event.preventDefault()"
+          onclick='selectAgentClientOption(${JSON.stringify(name)})'>
+          ${name === 'ALL' ? 'All clients' : name}
+        </button>`).join('')
+    : `<div class="client-option is-empty">No clients found</div>`;
+  menu.hidden = !open;
+}
+
+function openAgentClientMenu() {
+  const input = document.getElementById('agentClientSelect');
+  renderAgentClientMenu(input ? input.value : '', true);
+}
+
+function closeAgentClientMenu() {
+  window.setTimeout(() => {
+    const menu = document.getElementById('agentClientMenu');
+    if (menu) menu.hidden = true;
+    const input = document.getElementById('agentClientSelect');
+    if (input) handleClientLookup(input.value);
+  }, 120);
+}
+
+function toggleAgentClientMenu() {
+  const menu = document.getElementById('agentClientMenu');
+  const input = document.getElementById('agentClientSelect');
+  if (!menu || !input) return;
+  if (menu.hidden) {
+    input.focus();
+    renderAgentClientMenu(input.value, true);
+  } else {
+    menu.hidden = true;
+  }
+}
+
+function clearAgentClientInput() {
+  const input = document.getElementById('agentClientSelect');
+  if (!input) return;
+  input.value = '';
+  setActiveClient('ALL');
+  renderAgentClientMenu('', true);
+  input.focus();
+}
+
+function handleAgentClientInput(value) {
+  renderAgentClientMenu(value, true);
+}
+
+function handleAgentClientKeydown(event) {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    const matches = getFilteredAgentClients(event.target.value);
+    if (matches.length) selectAgentClientOption(matches[0]);
+  }
+  if (event.key === 'Escape') {
+    const menu = document.getElementById('agentClientMenu');
+    if (menu) menu.hidden = true;
+  }
+}
+
+function selectAgentClientOption(name) {
+  const input = document.getElementById('agentClientSelect');
+  if (input) input.value = name === 'ALL' ? '' : name;
+  const menu = document.getElementById('agentClientMenu');
+  if (menu) menu.hidden = true;
+  setActiveClient(name);
+}
+
+function handleClientLookup(value) {
+  const clients = getAgentClients();
+  const query = String(value || '').trim().toLowerCase();
+  if (!query || query === 'all clients') {
+    setActiveClient('ALL');
+    return;
+  }
+  const exactMatch = clients.find(name => name.toLowerCase() === query);
+  if (exactMatch) setActiveClient(exactMatch);
+}
+
+function handleAgentPolicySearchInput() {
+  const note = document.getElementById('agentPolicySearchNote');
+  if (note) {
+    note.textContent = '';
+    note.style.color = 'var(--muted)';
+  }
+}
+
+function clearAgentPolicySearch() {
+  const input = document.getElementById('agentPolicySearch');
+  const note = document.getElementById('agentPolicySearchNote');
+  if (input) input.value = '';
+  if (note) {
+    note.textContent = '';
+    note.style.color = 'var(--muted)';
+  }
+  if (input) input.focus();
+}
+
+function searchAgentPolicy() {
+  const input = document.getElementById('agentPolicySearch');
+  const note = document.getElementById('agentPolicySearchNote');
+  const query = String(input?.value || '').trim().toLowerCase();
+  if (!query) {
+    if (note) note.textContent = '';
+    return;
+  }
+
+  const matches = A.policies.filter(policy => policy.id.toLowerCase().includes(query));
+  const exact = matches.find(policy => policy.id.toLowerCase() === query);
+
+  if (exact || matches.length === 1) {
+    const match = exact || matches[0];
+    activeClient = match.client;
+    activeClientPolicyId = match.id;
+    const clientPolicies = getClientSnapshot(activeClient).policies;
+    const policyIndex = clientPolicies.findIndex(policy => policy.id === match.id);
+    pg.cpol = policyIndex >= 0 ? Math.floor(policyIndex / PS.cpol) : 0;
+    pg.pol = 0;
+    pg.cl = 0;
+    pg.pm = 0;
+    renderAgentWorkspaceV2();
+    return;
+  }
+
+  if (!note) return;
+  if (!matches.length) {
+    note.style.color = '#dc2626';
+    note.textContent = 'No policy found. Check the number and try again.';
+    return;
+  }
+  note.style.color = 'var(--muted)';
+  note.textContent = `${matches.length} matches found. Type the full policy number to jump straight to one.`;
+}
+
+function getScopedItems(k) {
+  const source = k==='pol' ? A.policies : k==='cl' ? A.claims : A.payments;
+  return activeClient === 'ALL' ? source : source.filter(item => item.client === activeClient);
+}
+
+function getClientSnapshot(name) {
+  const policies = name === 'ALL' ? A.policies : A.policies.filter(p => p.client === name);
+  const claims = name === 'ALL' ? A.claims : A.claims.filter(c => c.client === name);
+  const payments = name === 'ALL' ? A.payments : A.payments.filter(p => p.client === name);
+  const renewals = policies.filter(p => p.status === 'RENEWAL' || p.status === 'IN_RENEWAL');
+  const activePolicies = policies.filter(p => p.status === 'ACTIVE');
+  const latestPayment = payments[0]?.amount || '—';
+  return { policies, claims, payments, renewals, activePolicies, latestPayment };
+}
+
+function parseMoney(value) {
+  return Number(String(value || '').replace(/[^\d]/g, '')) || 0;
+}
+
+function formatCompactAmount(value) {
+  if (value >= 1000000) {
+    const millions = value / 1000000;
+    return `${Number.isInteger(millions) ? millions : millions.toFixed(1).replace(/\.0$/, '')}M`;
+  }
+  if (value >= 1000) return `${Math.round(value / 1000)}K`;
+  return `${value}`;
+}
+
+function getPrimaryPolicy(snapshot) {
+  return snapshot.activePolicies[0] || snapshot.renewals[0] || snapshot.policies[0] || null;
+}
+
+function getSelectedClientPolicy(snapshot) {
+  if (!snapshot.policies.length) return null;
+  const selected = snapshot.policies.find(p => p.id === activeClientPolicyId);
+  return selected || snapshot.policies[0];
+}
+
+function getWorkspaceItems(k) {
+  const snapshot = getClientSnapshot(activeClient);
+  if (k === 'pol') return snapshot.policies;
+  const selected = getSelectedClientPolicy(snapshot);
+  if (!selected) return [];
+  const source = k === 'cl' ? snapshot.claims : snapshot.payments;
+  return source.filter(item => item.policy === selected.id);
+}
+
+function getClientPolicyItems() {
+  return getClientSnapshot(activeClient).policies;
+}
+
+function getClientBenefitModel(snapshot, primaryPolicy) {
+  if (!primaryPolicy || !/Medical/i.test(primaryPolicy.product)) {
+    return { benefits: [], usage: [] };
+  }
+
+  const usage = [
+    { benefit:'OPD', provider:'International Hospital Kampala', amount:'UGX 55,000', date:snapshot.claims[0]?.filed || '10 Apr 2026' },
+    { benefit:'Dental', provider:'Dental Care Centre', amount:'UGX 120,000', date:snapshot.claims[1]?.filed || '15 Mar 2026' }
+  ];
+  const usageMap = { 'OPD COVER': 55000, 'DENTAL': 120000 };
+  const expires = '28 Apr 2027';
+  const benefits = [
+    { name:'OPD COVER', total:800000, status:'ACTIVE', expires },
+    { name:'IPD COVER', total:5000000, status:'ACTIVE', expires },
+    { name:'PHARMACY COVER', total:600000, status:'ACTIVE', expires },
+    { name:'DENTAL', total:250000, status:'ACTIVE', expires }
+  ].map(item => {
+    const used = usageMap[item.name] || 0;
+    const remaining = Math.max(item.total - used, 0);
+    const fill = item.total > 0 ? Math.min((used / item.total) * 100, 100) : 0;
+    return {
+      ...item,
+      fill,
+      remainingLabel: formatCompactAmount(remaining),
+      totalLabel: formatCompactAmount(item.total)
+    };
+  });
+
+  return { benefits, usage };
+}
+
+function getPolicyDocumentMeta(policy) {
+  if (!policy) return { count: 0, copy: 'Select a policy to view its documents.' };
+  const model = POLICY_MODELS[policy.id];
+  return model ? model.documents : { count: 3, copy: 'View policy documents, schedules, and letters for this cover.' };
+}
+
+function getPolicyModel(policy) {
+  return policy ? POLICY_MODELS[policy.id] || null : null;
+}
+
+function getPolicyClaimsById(id) {
+  return A.claims.filter(c => c.policy === id);
+}
+
+function getPolicyPaymentsById(id) {
+  return A.payments.filter(p => p.policy === id);
+}
+
+function renderSummaryList(rows) {
+  return `<div class="summary-list">${rows.map(([label, value]) => `
+    <div class="summary-row">
+      <span class="summary-label">${label}</span>
+      <span class="summary-value">${value}</span>
+    </div>`).join('')}</div>`;
+}
+
+function renderChipRow(items) {
+  return items && items.length
+    ? `<div class="widget-chip-row">${items.map(item => `<span class="widget-chip">${item}</span>`).join('')}</div>`
+    : '';
+}
+
+function renderModalList(items) {
+  return items && items.length
+    ? `<div class="mlist">${items.map(item => {
+        const parts = Array.isArray(item) ? item : [item, ''];
+        return `<div class="mlist-item"><strong>${parts[0]}</strong>${parts[1] ? `<span>${parts[1]}</span>` : ''}</div>`;
+      }).join('')}</div>`
+    : '';
+}
+
+function setModalContent(title, body) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = body;
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function openProductWidgetModal(kind, id) {
+  const policy = A.policies.find(x => x.id === id);
+  const model = getPolicyModel(policy);
+  if (!policy || !model) return;
+  const policyClaims = getPolicyClaimsById(id);
+  const policyPayments = getPolicyPaymentsById(id);
+  const latestClaim = policyClaims[0];
+  const latestPayment = policyPayments[0];
+
+  if (kind === 'coverage') {
+    setModalContent(`${policy.product} — Coverage Snapshot`, `
+      <div class="msect">Coverage Summary</div>
+      <div class="mgrid">${model.coverage.summary.map(([label, value]) => mf(label, value)).join('')}</div>
+      <div class="msect">What To Note</div>
+      ${renderModalList(model.coverage.sections.map(text => ['Coverage note', text]))}
+    `);
+    return;
+  }
+
+  if (kind === 'asset') {
+    setModalContent(`${policy.product} — ${model.asset.title}`, `
+      <div class="msect">${model.asset.title}</div>
+      <div class="mgrid">${model.asset.summary.map(([label, value]) => mf(label, value)).join('')}</div>
+      ${renderModalList(model.asset.details)}
+    `);
+    return;
+  }
+
+  if (kind === 'payments') {
+    setModalContent(`${policy.product} — Payments & IPF`, `
+      <div class="msect">Payment Status</div>
+      <div class="mgrid">${model.payments.summary.map(([label, value]) => mf(label, value)).join('')}</div>
+      <div class="msect">Recent Payment Activity</div>
+      ${latestPayment ? renderModalList(policyPayments.map(item => [`${item.date} — ${item.amount}`, `${item.method} • ${item.status}`])) : `<div class="no-data">No payments recorded for this policy yet.</div>`}
+      ${renderModalList(model.payments.schedule.map(text => ['Payment note', text]))}
+    `);
+    return;
+  }
+
+  if (kind === 'claims') {
+    setModalContent(`${policy.product} — Claims & Evidence`, `
+      <div class="msect">Claim Support</div>
+      <div class="mgrid">${model.claims.summary.map(([label, value]) => mf(label, value)).join('')}</div>
+      <div class="msect">Evidence Checklist</div>
+      ${renderModalList(model.claims.checklist.map(text => ['Required item', text]))}
+      <div class="msect">Policy Claim Activity</div>
+      ${latestClaim ? renderModalList(policyClaims.map(item => [`${item.id} — ${item.status}`, `${item.filed} • ${item.amount}`])) : `<div class="no-data">No claim activity has been recorded for this policy yet.</div>`}
+    `);
+    return;
+  }
+
+  if (kind === 'renewal') {
+    setModalContent(`${policy.product} — Renewal & Tasks`, `
+      <div class="msect">Renewal Snapshot</div>
+      <div class="mgrid">${model.renewal.summary.map(([label, value]) => mf(label, value)).join('')}</div>
+      <div class="msect">Action Queue</div>
+      ${renderModalList(model.renewal.tasks.map(text => ['Next action', text]))}
+    `);
+    return;
+  }
+
+  if (kind === 'documents') {
+    setModalContent(`${policy.product} — Document Centre`, `
+      <div class="mcopy">${model.documents.copy}</div>
+      <div class="msect">Available Documents</div>
+      ${renderModalList(model.documents.items.map(text => [text, `${policy.id} • ready to download`]))}
+    `);
+  }
+}
+
+function formatUGX(value) {
+  return `UGX ${Number(value || 0).toLocaleString('en-US')}`;
+}
+
+function getPolicyIpfState(id) {
+  return ipfState[id] || { status:"NOT_ACTIVE", suggestedInstalments:3, suggestedDepositPct:30, note:"No active instalment plan for this policy yet." };
+}
+
+function openIpfFlow(id) {
+  const policy = A.policies.find(x => x.id === id);
+  if (!policy) return;
+  const state = getPolicyIpfState(id);
+
+  if (state.status === 'ACTIVE' || state.status === 'PENDING') {
+    setModalContent(`${policy.product} - IPF Details`, `
+      <div class="mcopy">${state.note || 'Instalment details are available for this policy.'}</div>
+      <div class="msect">Plan Summary</div>
+      <div class="mgrid">
+        ${mf('Status', state.status === 'ACTIVE' ? bdg('ACTIVE') : bdg('Pending'))}
+        ${mf('Plan', state.plan || 'Requested plan')}
+        ${mf('Deposit', state.deposit || 'To be confirmed')}
+        ${mf('Financed Amount', state.financed || 'To be confirmed')}
+        ${mf('Next Due', state.nextDue || 'Awaiting approval')}
+        ${mf('Instalment Amount', state.monthly || 'Awaiting approval')}
+      </div>
+      <div class="msect">Plan Timeline</div>
+      ${renderModalList((state.schedule || []).map(text => ['Plan step', text]))}
+    `);
+    return;
+  }
+
+  ipfDraft = {
+    id,
+    instalments: state.suggestedInstalments || 3,
+    depositPct: state.suggestedDepositPct || 30
+  };
+  renderIpfStepOne();
+}
+
+function renderIpfStepOne() {
+  if (!ipfDraft) return;
+  const policy = A.policies.find(x => x.id === ipfDraft.id);
+  if (!policy) return;
+  const premium = parseMoney(policy.premium);
+  const deposit = Math.round((premium * ipfDraft.depositPct) / 100);
+  const financed = Math.max(premium - deposit, 0);
+  const instalmentAmount = ipfDraft.instalments ? Math.round(financed / ipfDraft.instalments) : financed;
+
+  setModalContent(`${policy.product} - Apply for IPF`, `
+    <div class="mcopy">Split this premium into a deposit and manageable follow-up payments.</div>
+    <div class="msect">Choose A Plan</div>
+    <div class="mtag-row">
+      ${[2,3,4].map(count => `<button class="mtag ${ipfDraft.instalments === count ? 'is-active' : ''}" onclick="setIpfInstalments(${count})">${count} instalments</button>`).join('')}
+    </div>
+    <div class="mgrid">
+      ${mf('Policy Premium', policy.premium)}
+      ${mf('Deposit Today', formatUGX(deposit))}
+      ${mf('Financed Amount', formatUGX(financed))}
+      ${mf('Per Instalment', formatUGX(instalmentAmount))}
+      ${mf('First Due Date', policy.due)}
+      ${mf('Applied By', A.name)}
+    </div>
+    <div class="widget-action-end" style="margin-top:16px">
+      <button class="btn-red" onclick="renderIpfStepTwo()">Continue</button>
+    </div>
+  `);
+}
+
+function setIpfInstalments(count) {
+  if (!ipfDraft) return;
+  ipfDraft.instalments = count;
+  renderIpfStepOne();
+}
+
+function renderIpfStepTwo() {
+  if (!ipfDraft) return;
+  const policy = A.policies.find(x => x.id === ipfDraft.id);
+  if (!policy) return;
+  const premium = parseMoney(policy.premium);
+  const deposit = Math.round((premium * ipfDraft.depositPct) / 100);
+  const financed = Math.max(premium - deposit, 0);
+  const instalmentAmount = ipfDraft.instalments ? Math.round(financed / ipfDraft.instalments) : financed;
+
+  setModalContent(`${policy.product} - Review IPF Request`, `
+    <div class="mcopy">Review the plan below, then submit the request for finance approval.</div>
+    <div class="msect">Request Summary</div>
+    <div class="mgrid">
+      ${mf('Policy ID', policy.id)}
+      ${mf('Product', policy.product)}
+      ${mf('Instalment Plan', `${ipfDraft.instalments} instalments`)}
+      ${mf('Deposit', formatUGX(deposit))}
+      ${mf('Financed Amount', formatUGX(financed))}
+      ${mf('Per Instalment', formatUGX(instalmentAmount))}
+    </div>
+    ${renderModalList([
+      ['Step 1', 'Deposit is collected once the request is approved.'],
+      ['Step 2', 'Remaining balance is spread across the selected instalments.'],
+      ['Step 3', 'The policy stays visible here for tracking and follow-up.']
+    ])}
+    <div class="widget-action-end" style="margin-top:16px;gap:10px">
+      <button class="btn-outline-soft" onclick="renderIpfStepOne()">Back</button>
+      <button class="btn-red" onclick="submitIpfRequest()">Submit Request</button>
+    </div>
+  `);
+}
+
+function submitIpfRequest() {
+  if (!ipfDraft) return;
+  const policy = A.policies.find(x => x.id === ipfDraft.id);
+  if (!policy) return;
+  const premium = parseMoney(policy.premium);
+  const deposit = Math.round((premium * ipfDraft.depositPct) / 100);
+  const financed = Math.max(premium - deposit, 0);
+  const instalmentAmount = ipfDraft.instalments ? Math.round(financed / ipfDraft.instalments) : financed;
+
+  ipfState[ipfDraft.id] = {
+    status:"PENDING",
+    plan:`${ipfDraft.instalments}-part instalment plan`,
+    deposit:formatUGX(deposit),
+    financed:formatUGX(financed),
+    nextDue:policy.due,
+    monthly:formatUGX(instalmentAmount),
+    note:"Instalment request sent. Finance review is now pending.",
+    schedule:[
+      `Request submitted on ${new Date().toLocaleDateString('en-GB')}`,
+      `Deposit to be collected after approval: ${formatUGX(deposit)}`,
+      `Follow-up instalments planned at ${formatUGX(instalmentAmount)} each`
+    ]
+  };
+
+  renderAgentWorkspaceV2();
+  setModalContent(`${policy.product} - IPF Request Sent`, `
+    <div class="mcopy">The instalment request has been logged for this policy. You can track it from the Payments & IPF card.</div>
+    <div class="mgrid">
+      ${mf('Policy', policy.id)}
+      ${mf('Requested Plan', ipfState[ipfDraft.id].plan)}
+      ${mf('Deposit', ipfState[ipfDraft.id].deposit)}
+      ${mf('Status', bdg('Pending'))}
+    </div>
+  `);
+  ipfDraft = null;
+}
+
+function setActiveClient(name) {
+  activeClient = name;
+  pg.cpol = 0;
+  pg.pol = 0;
+  pg.cl = 0;
+  pg.pm = 0;
+  const snapshot = getClientSnapshot(activeClient);
+  activeClientPolicyId = snapshot.policies[0]?.id || null;
+  renderAgentWorkspaceV2();
+}
+
+function selectAgentPolicy(policyId) {
+  activeClientPolicyId = policyId;
+  pg.cl = 0;
+  pg.pm = 0;
+  renderAgentWorkspaceV2();
+}
+
+const PS = { pol:7, cpol:4, cl:4, pm:4, sch:3, ef:3 };
+const pg = { pol:0, cpol:0, cl:0, pm:0, sch:0, ef:0 };
+function pgd(arr, k) {
+  const sz=PS[k], p=pg[k], n=arr.length, s=p*sz, e=Math.min(s+sz,n);
+  return { items:arr.slice(s,e), s:s+1, e, n, prev:p>0, next:e<n };
+}
+function cpg(k, d) {
+  const arr = k === 'sch' ? A.schedules : k === 'ef' ? A.efris : k === 'cpol' ? getClientPolicyItems() : getWorkspaceItems(k);
+  pg[k] = Math.max(0, Math.min(pg[k]+d, Math.ceil(arr.length/PS[k])-1));
+  renderAgentWorkspaceV2();
+}
+function pgHTML(k, r) {
+  return `<div class="pgrow">
+    <span class="pgtext">Showing <strong>${r.s}–${r.e}</strong> of <strong>${r.n}</strong></span>
+    <div class="pgarr">
+      <button class="pgbtn" onclick="cpg('${k}',-1)" ${!r.prev?'disabled':''}>&lsaquo;</button>
+      <button class="pgbtn" onclick="cpg('${k}',1)"  ${!r.next?'disabled':''}>&rsaquo;</button>
+    </div>
+  </div>`;
+}
+
+// ════════════════════════════════
+//  HELPERS
+// ════════════════════════════════
+function bdg(s) {
+  const m={ 'ACTIVE':'b-active','RENEWAL':'b-renewal','IN_RENEWAL':'b-renewal','EXPIRED':'b-expired',
+    'Paid':'b-paid','Pending':'b-pending','Settled':'b-settled','Under Review':'b-review',
+    'Successful':'b-success','Pending Finance Review':'b-pr','Processed':'b-ok','Rejected':'b-no' };
+  const l={ 'ACTIVE':'ACTIVE','RENEWAL':'IN RENEWAL','IN_RENEWAL':'IN RENEWAL','EXPIRED':'EXPIRED','Pending Finance Review':'PENDING REVIEW' };
+  return `<span class="badge ${m[s]||'b-pending'}">${l[s]||s.toUpperCase()}</span>`;
+}
+function mf(lbl, val) {
+  return `<div class="mfield"><span class="mlbl">${lbl}</span><span class="mval">${val}</span></div>`;
+}
+function mfFull(lbl, val) {
+  return `<div class="mfield full"><span class="mlbl">${lbl}</span><span class="mval">${val}</span></div>`;
+}
+
+// ════════════════════════════════
+//  MODAL
+// ════════════════════════════════
+function openPolicyModal(id) {
+  const p = A.policies.find(x=>x.id===id); if(!p) return;
+  const model = getPolicyModel(p);
+  setModalContent('Policy Details', `
+    <div class="msect">Policy Information</div>
+    <div class="mgrid">
+      ${mf('Policy ID', p.id)}
+      ${mf('Status', bdg(p.status))}
+      ${mf('Client Name', p.client)}
+      ${mf('Product', p.product)}
+      ${mf('Premium', p.premium)}
+      ${mf('Policy Term', p.freq)}
+      ${mf('Due Date', p.due)}
+      ${mf('Start Date', p.startDate)}
+      ${mfFull('Sum Covered', p.sumCovered)}
+    </div>
+    ${model ? `<div class="msect">At a Glance</div><div class="mgrid">${model.overview.map(([label, value]) => mf(label, value)).join('')}</div>` : ''}
+  `);
+}
+function openClaimModal(id) {
+  const c = A.claims.find(x=>x.id===id); if(!c) return;
+  document.getElementById('modalTitle').textContent = 'Claim Details';
+  document.getElementById('modalBody').innerHTML = `
+    <div class="msect">Claim Information</div>
+    <div class="mgrid">
+      ${mf('Claim ID', c.id)}
+      ${mf('Status', bdg(c.status))}
+      ${mf('Client', c.client)}
+      ${mf('Policy', c.policy)}
+      ${mf('Product', c.product)}
+      ${mf('Date Filed', c.filed)}
+      ${mfFull('Claim Amount', c.amount)}
+    </div>`;
+  document.getElementById('detailModal').classList.add('open');
+}
+function openPaymentModal(i) {
+  const p = A.payments[i]; if(!p) return;
+  document.getElementById('modalTitle').textContent = 'Payment Details';
+  document.getElementById('modalBody').innerHTML = `
+    <div class="msect">Payment Information</div>
+    <div class="mgrid">
+      ${mf('Client', p.client)}
+      ${mf('Status', bdg(p.status))}
+      ${mf('Policy', p.policy)}
+      ${mf('Product', p.product)}
+      ${mf('Amount', p.amount)}
+      ${mf('Payment Method', p.method)}
+      ${mfFull('Payment Date', p.date)}
+    </div>`;
+  document.getElementById('detailModal').classList.add('open');
+}
+function openScheduleModal(period) {
+  const s = A.schedules.find(x=>x.period===period); if(!s) return;
+  document.getElementById('modalTitle').textContent = 'Commission Details — ' + period;
+  document.getElementById('modalBody').innerHTML = `
+    <div class="msect">Schedule Breakdown</div>
+    <div class="mgrid">
+      ${mf('Period', s.period)}
+      ${mf('Status', bdg(s.status))}
+      ${mf('Policies Count', s.policies)}
+      ${mf('Commission Rate', s.rate)}
+      ${mf('Gross Premium', s.gross)}
+      ${mfFull('Commission Earned', s.commission)}
+    </div>`;
+  document.getElementById('detailModal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('detailModal').classList.remove('open');
+}
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+// ════════════════════════════════
+//  RENDER
+// ════════════════════════════════
+function render() {
+  document.getElementById('agentName').textContent = A.name;
+  document.getElementById('agentCode').textContent  = A.code;
+
+  // ── Summary widget (col 1, first card) ─────────
+  const summaryWidget = `
+    <div class="wcard">
+      <div class="whead">
+        <div class="wttl"><div class="wbar"></div><span class="wtitle">Portfolio Summary</span></div>
+        <span class="wcount">Apr 2026</span>
+      </div>
+      <div class="wbody">
+        ${[
+          ['Active Policies',         A.kpi.active],
+          ['Pending Renewal',         A.kpi.renewal],
+          ['Expired Policies',        A.kpi.expired],
+          ['Total Portfolio Premium', A.kpi.premium],
+          ['Commission — Mar 2026',   A.kpi.commission],
+          ['Pending Payout',          A.kpi.pending],
+        ].map(([lbl,val],i,arr) => `
+          <div style="display:flex;align-items:center;justify-content:space-between;
+                      padding:8px 0;border-bottom:${i<arr.length-1?'1px solid #f1f5f9':'none'}">
+            <span style="font-size:11px;color:var(--muted);font-weight:500">${lbl}</span>
+            <span style="font-size:12.5px;font-weight:700;color:var(--dark)">${val}</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+
+  // ── COL 1: Policy Portfolio ─────────────────────
+  const pp = pgd(A.policies,'pol');
+  const sch = pgd(A.schedules,'sch');
+  const col1 = `
+    <div class="wcard">
+      <div class="whead">
+        <div class="wttl"><div class="wbar"></div><span class="wtitle">Policy Portfolio</span></div>
+        <span class="wcount">${A.policies.length} policies</span>
+      </div>
+      <div class="wbody">
+        <table class="ctbl">
+          <thead><tr><th>Policy</th><th>Client</th><th>Status</th><th class="rt">Premium</th></tr></thead>
+          <tbody>
+            ${pp.items.map(p=>`
+              <tr class="clickable" onclick="openPolicyModal('${p.id}')" title="Click to view full details">
+                <td class="fw no-wrap" style="font-size:10.5px">${p.id}</td>
+                <td>${p.client}</td>
+                <td>${bdg(p.status)}</td>
+                <td class="rt mu no-wrap">${p.premium}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+        ${pgHTML('pol',pp)}
+      </div>
+    </div>`;
+
+  // ── COL 2: Commission + Claims ──────────────────
+  const cp = pgd(A.claims,'cl');
+  const col2 = `
+    <div class="wcard">
+      <div class="whead">
+        <div class="wttl"><div class="wbar"></div><span class="wtitle">Commission Schedule</span></div>
+        <button class="btn-sm bs-red" onclick="downloadSchedule()">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </button>
+      </div>
+      <div class="wbody">
+        <table class="ctbl">
+          <thead><tr><th>Period</th><th>Commission</th><th>Status</th></tr></thead>
+          <tbody>
+            ${sch.items.map(s=>`
+              <tr class="clickable" onclick="openScheduleModal('${s.period}')" title="Click for full breakdown">
+                <td class="fw">${s.period}</td>
+                <td class="fw" style="color:#059668">${s.commission}</td>
+                <td>${bdg(s.status)}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+        <div class="sched-foot">
+          <div class="sn">This month: <strong>${A.kpi.commission}</strong><br>Pending: <strong style="color:#f59e0b">${A.kpi.pending}</strong></div>
+          <div class="sn" style="text-align:right">Last payout: <strong>UGX 241,000</strong><br>28 Feb 2026</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wcard">
+      <div class="whead">
+        <div class="wttl"><div class="wbar"></div><span class="wtitle">Claims</span></div>
+        <span class="wcount">${A.claims.length} total</span>
+      </div>
+      <div class="wbody">
+        <table class="ctbl">
+          <thead><tr><th>Claim ID</th><th>Client</th><th>Status</th><th class="rt">Amount</th></tr></thead>
+          <tbody>
+            ${cp.items.map(c=>`
+              <tr class="clickable" onclick="openClaimModal('${c.id}')" title="Click to view details">
+                <td class="fw no-wrap" style="font-size:10.5px">${c.id}</td>
+                <td>${c.client}</td>
+                <td>${bdg(c.status)}</td>
+                <td class="rt mu no-wrap">${c.amount}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+        ${pgHTML('cl',cp)}
+      </div>
+    </div>`;
+
+  // ── COL 3: Payments + eFRIS ─────────────────────
+  const pm = pgd(A.payments,'pm');
+  const col3 = `
+    <div class="wcard">
+      <div class="whead">
+        <div class="wttl"><div class="wbar"></div><span class="wtitle">Payment History</span></div>
+        <span class="wcount">${A.payments.length} records</span>
+      </div>
+      <div class="wbody">
+        <table class="ctbl">
+          <thead><tr><th>Client</th><th>Method</th><th>Status</th><th class="rt">Amount</th></tr></thead>
+          <tbody>
+            ${pm.items.map((p,i)=>`
+              <tr class="clickable" onclick="openPaymentModal(${A.payments.indexOf(p)})" title="Click to view details">
+                <td>${p.client}</td>
+                <td class="mu">${p.method}</td>
+                <td>${bdg(p.status)}</td>
+                <td class="rt mu no-wrap">${p.amount}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+        ${pgHTML('pm',pm)}
+      </div>
+    </div>
+
+    <div class="wcard">
+      <div class="whead">
+        <div class="wttl"><div class="wbar"></div><span class="wtitle">eFRIS Invoice Upload</span></div>
+      </div>
+      <div class="wbody">
+        <div class="fpick">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span class="fpick-name" id="efFileName">No file selected</span>
+          <button class="btn-sm bs-out" onclick="document.getElementById('efFile').click()">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Choose File
+          </button>
+        </div>
+        <input type="file" id="efFile" accept=".pdf" style="display:none" />
+        <div class="efform">
+          <div><label class="eflbl">Invoice No.</label><input class="efin" type="text" id="efNum" placeholder="EFR-0092" /></div>
+          <div><label class="eflbl">Amount (UGX)</label><input class="efin" type="text" id="efAmt" placeholder="284,000" /></div>
+          <div><label class="eflbl">Commission Period</label>
+            <select class="efsel" id="efPeriod">
+              <option value="">Select…</option>
+              <option>Apr 2026</option><option>Mar 2026</option><option>Feb 2026</option><option>Jan 2026</option>
+            </select>
+          </div>
+          <div><label class="eflbl">Invoice Date</label><input class="efin" type="date" id="efDate" /></div>
+        </div>
+        <div class="efbtns">
+          <button class="sub" onclick="submitEf()">Submit Invoice</button>
+        </div>
+        <div class="notif" id="efNotif">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <div><strong>Submitted.</strong> Finance team will be notified via email.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wcard">
+      <div class="whead">
+        <div class="wttl"><div class="wbar"></div><span class="wtitle">eFRIS History</span></div>
+        <span class="wcount">${A.efris.length} records</span>
+      </div>
+      <div class="wbody">
+        ${A.efris.map(e=>`
+          <div class="erow">
+            <div><div class="eid">${e.id}</div><div class="emeta">${e.period} · ${e.date}</div></div>
+            <div style="text-align:right"><div class="eamt">${e.amount}</div>${bdg(e.status)}</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+
+  document.getElementById('widgetArea').innerHTML = `
+    <div class="col">${summaryWidget}${col1}</div>
+    <div class="col">${col2}</div>
+    <div class="col">${col3}</div>`;
+
+  // re-attach file listener
+  document.getElementById('efFile').addEventListener('change', function() {
+    const el = document.getElementById('efFileName');
+    el.textContent = this.files[0] ? this.files[0].name : 'No file selected';
+    el.style.color = this.files[0] ? '#059668' : 'var(--muted)';
+  });
+}
+
+// ════════════════════════════════
+//  ACTIONS
+// ════════════════════════════════
+function renderAgentDashboard() {
+  document.getElementById('agentName').textContent = A.name;
+  document.getElementById('agentCode').textContent  = A.code;
+
+  document.getElementById('agentKpiBar').innerHTML = `
+    <div class="agent-kpi-item">
+      <div class="agent-kpi-copy">
+        <span class="agent-kpi-lbl">Active Policies</span>
+        <span class="agent-kpi-sub">${A.kpi.expired} need follow-up</span>
+      </div>
+      <div class="agent-kpi-meta">
+        <span class="agent-kpi-val">${A.kpi.active}</span>
+        <span class="agent-kpi-note">Live</span>
+      </div>
+    </div>
+    <div class="agent-kpi-item is-warn">
+      <div class="agent-kpi-copy">
+        <span class="agent-kpi-lbl">Pending Renewal</span>
+        <span class="agent-kpi-sub">Up for renewal</span>
+      </div>
+      <div class="agent-kpi-meta">
+        <span class="agent-kpi-val">${A.kpi.renewal}</span>
+        <span class="agent-kpi-note">Review</span>
+      </div>
+    </div>
+    <div class="agent-kpi-item">
+      <div class="agent-kpi-copy">
+        <span class="agent-kpi-lbl">Portfolio Premium</span>
+        <span class="agent-kpi-sub">Active book total</span>
+      </div>
+      <div class="agent-kpi-meta">
+        <span class="agent-kpi-val" style="font-size:22px">${A.kpi.premium}</span>
+        <span class="agent-kpi-note">Current</span>
+      </div>
+    </div>
+    <div class="agent-kpi-item is-alert">
+      <div class="agent-kpi-copy">
+        <span class="agent-kpi-lbl">Commission This Month</span>
+        <span class="agent-kpi-sub">${A.kpi.pending} pending</span>
+      </div>
+      <div class="agent-kpi-meta">
+        <span class="agent-kpi-val" style="font-size:22px">${A.kpi.commission}</span>
+        <span class="agent-kpi-note">Due</span>
+      </div>
+    </div>`;
+
+  const pp = pgd(A.policies,'pol');
+  const sch = pgd(A.schedules,'sch');
+  const col1 = `
+    <div class="wcard">
+      <div class="whead">
+        <div class="wttl"><div class="wbar"></div><span class="wtitle">Policy Portfolio</span></div>
+        <span class="wcount">${A.policies.length} policies</span>
+      </div>
+      <div class="wbody">
+        <table class="ctbl">
+          <thead><tr><th>Policy</th><th>Client</th><th>Status</th><th class="rt">Premium</th></tr></thead>
+          <tbody>
+            ${pp.items.map(p=>`
+              <tr class="clickable" onclick="openPolicyModal('${p.id}')" title="Click to view full details">
+                <td class="fw no-wrap" style="font-size:10.5px">${p.id}</td>
+                <td>${p.client}</td>
+                <td>${bdg(p.status)}</td>
+                <td class="rt mu no-wrap">${p.premium}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+        ${pgHTML('pol',pp)}
+      </div>
+    </div>`;
+
+  const cp = pgd(A.claims,'cl');
+  const col2 = `
+    <div class="wcard">
+      <div class="whead">
+        <div class="wttl"><div class="wbar"></div><span class="wtitle">Commission Schedule</span></div>
+        <button class="btn-sm bs-red" onclick="downloadSchedule()">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </button>
+      </div>
+      <div class="wbody">
+        <table class="ctbl">
+          <thead><tr><th>Period</th><th>Commission</th><th>Status</th></tr></thead>
+          <tbody>
+            ${sch.items.map(s=>`
+              <tr class="clickable" onclick="openScheduleModal('${s.period}')" title="Click for full breakdown">
+                <td class="fw">${s.period}</td>
+                <td class="fw" style="color:#059668">${s.commission}</td>
+                <td>${bdg(s.status)}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+        <div class="sched-foot">
+          <div class="sn">This month: <strong>${A.kpi.commission}</strong><br>Pending: <strong style="color:#f59e0b">${A.kpi.pending}</strong></div>
+          <div class="sn" style="text-align:right">Last payout: <strong>UGX 241,000</strong><br>28 Feb 2026</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wcard">
+      <div class="whead">
+        <div class="wttl"><div class="wbar"></div><span class="wtitle">Claims</span></div>
+        <span class="wcount">${A.claims.length} total</span>
+      </div>
+      <div class="wbody">
+        <table class="ctbl">
+          <thead><tr><th>Claim ID</th><th>Client</th><th>Status</th><th class="rt">Amount</th></tr></thead>
+          <tbody>
+            ${cp.items.map(c=>`
+              <tr class="clickable" onclick="openClaimModal('${c.id}')" title="Click to view details">
+                <td class="fw no-wrap" style="font-size:10.5px">${c.id}</td>
+                <td>${c.client}</td>
+                <td>${bdg(c.status)}</td>
+                <td class="rt mu no-wrap">${c.amount}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+        ${pgHTML('cl',cp)}
+      </div>
+    </div>`;
+
+  const pm = pgd(A.payments,'pm');
+  const col3 = `
+    <div class="wcard">
+      <div class="whead">
+        <div class="wttl"><div class="wbar"></div><span class="wtitle">Payment History</span></div>
+        <span class="wcount">${A.payments.length} records</span>
+      </div>
+      <div class="wbody">
+        <table class="ctbl">
+          <thead><tr><th>Client</th><th>Method</th><th>Status</th><th class="rt">Amount</th></tr></thead>
+          <tbody>
+            ${pm.items.map(p=>`
+              <tr class="clickable" onclick="openPaymentModal(${A.payments.indexOf(p)})" title="Click to view details">
+                <td>${p.client}</td>
+                <td class="mu">${p.method}</td>
+                <td>${bdg(p.status)}</td>
+                <td class="rt mu no-wrap">${p.amount}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+        ${pgHTML('pm',pm)}
+      </div>
+    </div>
+
+    <div class="wcard">
+      <div class="whead">
+        <div class="wttl"><div class="wbar"></div><span class="wtitle">eFRIS Invoice Upload</span></div>
+      </div>
+      <div class="wbody">
+        <div class="fpick">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span class="fpick-name" id="efFileName">No file selected</span>
+          <button class="btn-sm bs-out" onclick="document.getElementById('efFile').click()">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Choose File
+          </button>
+        </div>
+        <input type="file" id="efFile" accept=".pdf" style="display:none" />
+        <div class="efform">
+          <div><label class="eflbl">Invoice No.</label><input class="efin" type="text" id="efNum" placeholder="EFR-0092" /></div>
+          <div><label class="eflbl">Amount (UGX)</label><input class="efin" type="text" id="efAmt" placeholder="284,000" /></div>
+          <div><label class="eflbl">Commission Period</label>
+            <select class="efsel" id="efPeriod">
+              <option value="">Selectâ€¦</option>
+              <option>Apr 2026</option><option>Mar 2026</option><option>Feb 2026</option><option>Jan 2026</option>
+            </select>
+          </div>
+          <div><label class="eflbl">Invoice Date</label><input class="efin" type="date" id="efDate" /></div>
+        </div>
+        <div class="efbtns">
+          <button class="sub" onclick="submitEf()">Submit Invoice</button>
+        </div>
+        <div class="notif" id="efNotif">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <div><strong>Submitted.</strong> Finance team will be notified via email.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wcard">
+      <div class="whead">
+        <div class="wttl"><div class="wbar"></div><span class="wtitle">eFRIS History</span></div>
+        <span class="wcount">${A.efris.length} records</span>
+      </div>
+      <div class="wbody">
+          ${ef.items.map(e=>`
+            <div class="erow">
+              <div><div class="eid">${e.id}</div><div class="emeta">${e.period} - ${e.date}</div></div>
+              <div style="text-align:right"><div class="eamt">${e.amount}</div>${bdg(e.status)}</div>
+            </div>`).join('')}
+      </div>
+    </div>`;
+
+  document.getElementById('widgetArea').innerHTML = `
+    <div class="col">${col1}</div>
+    <div class="col">${col2}</div>
+    <div class="col">${col3}</div>`;
+
+  document.getElementById('efFile').addEventListener('change', function() {
+    const el = document.getElementById('efFileName');
+    el.textContent = this.files[0] ? this.files[0].name : 'No file selected';
+    el.style.color = this.files[0] ? '#059668' : 'var(--muted)';
+  });
+}
+
+function renderAgentWorkspace() {
+  document.getElementById('agentName').textContent = A.name;
+  document.getElementById('agentCode').textContent = A.code;
+
+  document.getElementById('agentKpiBar').innerHTML = `
+    <div class="agent-kpi-item">
+      <div class="agent-kpi-copy">
+        <span class="agent-kpi-lbl">Active Policies</span>
+        <span class="agent-kpi-sub">${A.kpi.expired} need follow-up</span>
+      </div>
+      <div class="agent-kpi-meta">
+        <span class="agent-kpi-val">${A.kpi.active}</span>
+        <span class="agent-kpi-note">Live</span>
+      </div>
+    </div>
+    <div class="agent-kpi-item is-warn">
+      <div class="agent-kpi-copy">
+        <span class="agent-kpi-lbl">Pending Renewal</span>
+        <span class="agent-kpi-sub">Up for renewal</span>
+      </div>
+      <div class="agent-kpi-meta">
+        <span class="agent-kpi-val">${A.kpi.renewal}</span>
+        <span class="agent-kpi-note">Review</span>
+      </div>
+    </div>
+    <div class="agent-kpi-item">
+      <div class="agent-kpi-copy">
+        <span class="agent-kpi-lbl">Portfolio Premium</span>
+        <span class="agent-kpi-sub">Active book total</span>
+      </div>
+      <div class="agent-kpi-meta">
+        <span class="agent-kpi-val" style="font-size:22px">${A.kpi.premium}</span>
+        <span class="agent-kpi-note">Current</span>
+      </div>
+    </div>
+    <div class="agent-kpi-item is-alert">
+      <div class="agent-kpi-copy">
+        <span class="agent-kpi-lbl">Commission This Month</span>
+        <span class="agent-kpi-sub">${A.kpi.pending} pending</span>
+      </div>
+      <div class="agent-kpi-meta">
+        <span class="agent-kpi-val" style="font-size:22px">${A.kpi.commission}</span>
+        <span class="agent-kpi-note">Due</span>
+      </div>
+    </div>`;
+
+  const clients = getAgentClients();
+  const snapshot = getClientSnapshot(activeClient);
+  const pp = pgd(getScopedItems('pol'),'pol');
+  const cp = pgd(getScopedItems('cl'),'cl');
+  const pm = pgd(getScopedItems('pm'),'pm');
+  const sch = pgd(A.schedules,'sch');
+  const ef = pgd(A.efris,'ef');
+  const primaryPolicy = getPrimaryPolicy(snapshot);
+  const benefitModel = getClientBenefitModel(snapshot, primaryPolicy);
+
+  document.getElementById('opsArea').innerHTML = `
+    <div class="ops-grid">
+      <div class="wcard">
+        <div class="whead">
+          <div class="wttl"><div class="wbar"></div><span class="wtitle">Commission Schedule</span></div>
+          <span class="wcount">${A.schedules.length} periods</span>
+          <button class="btn-dl" onclick="downloadSchedule()">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download
+          </button>
+        </div>
+        <div class="wbody">
+          <div class="txn-list">
+            ${sch.items.map(s=>`
+              <div class="txn-card" onclick="openScheduleModal('${s.period}')" title="View commission details">
+                <div class="txn-left">
+                  <div class="txn-date">${s.period}</div>
+                  <div class="txn-meta">${s.policies} policies</div>
+                  <div class="txn-id-row">Gross premium: ${s.gross} • Rate: ${s.rate}</div>
+                </div>
+                <div class="txn-right">
+                  <div class="txn-amt" style="color:#059668">${s.commission}</div>
+                  ${bdg(s.status)}
+                </div>
+              </div>`).join('')}
+          </div>
+          <div class="ops-widget-foot">
+            <div class="txn-pagination">
+              <div class="pager-inline-text">Showing <strong>${sch.s}-${sch.e}</strong> of <strong>${sch.n}</strong></div>
+              <div class="pager-inline-arrows">
+                <button class="pg-nav" ${!sch.prev ? 'disabled' : ''} onclick="cpg('sch',-1)">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <button class="pg-nav" ${!sch.next ? 'disabled' : ''} onclick="cpg('sch',1)">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wcard">
+        <div class="whead">
+          <div class="wttl"><div class="wbar"></div><span class="wtitle">eFRIS Invoice Upload</span></div>
+        </div>
+        <div class="wbody">
+          <div class="fpick">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span class="fpick-name" id="efFileName">No file selected</span>
+            <button class="btn-sm bs-out" onclick="document.getElementById('efFile').click()">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Choose File
+            </button>
+          </div>
+          <input type="file" id="efFile" accept=".pdf" style="display:none" />
+          <div class="efform">
+            <div><label class="eflbl">Invoice No.</label><input class="efin" type="text" id="efNum" placeholder="EFR-0092" /></div>
+            <div><label class="eflbl">Amount (UGX)</label><input class="efin" type="text" id="efAmt" placeholder="284,000" /></div>
+            <div><label class="eflbl">Commission Period</label>
+              <select class="efsel" id="efPeriod">
+                <option value="">Select...</option>
+                <option>Apr 2026</option><option>Mar 2026</option><option>Feb 2026</option><option>Jan 2026</option>
+              </select>
+            </div>
+            <div><label class="eflbl">Invoice Date</label><input class="efin" type="date" id="efDate" /></div>
+          </div>
+          <div class="efbtns">
+            <button class="sub" onclick="submitEf()">Submit Invoice</button>
+          </div>
+          <div class="notif" id="efNotif">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <div><strong>Submitted.</strong> Finance team will be notified via email.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wcard">
+        <div class="whead">
+          <div class="wttl"><div class="wbar"></div><span class="wtitle">eFRIS History</span></div>
+          <span class="wcount">${A.efris.length} records</span>
+        </div>
+        <div class="wbody">
+          ${ef.items.map(e=>`
+            <div class="erow">
+              <div><div class="eid">${e.id}</div><div class="emeta">${e.period} · ${e.date}</div></div>
+              <div style="text-align:right"><div class="eamt">${e.amount}</div>${bdg(e.status)}</div>
+            </div>`).join('')}
+          <div class="ops-widget-foot">
+            <div class="txn-pagination">
+              <div class="pager-inline-text">Showing <strong>${ef.s}-${ef.e}</strong> of <strong>${ef.n}</strong></div>
+              <div class="pager-inline-arrows">
+                <button class="pg-nav" ${!ef.prev ? 'disabled' : ''} onclick="cpg('ef',-1)">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <button class="pg-nav" ${!ef.next ? 'disabled' : ''} onclick="cpg('ef',1)">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('clientWorkspaceArea').innerHTML = `
+    <div class="client-shell">
+      <aside class="client-rail">
+        <div class="client-rail-top">
+          <label class="client-label" for="agentClientSelect">Select Client</label>
+          <select id="agentClientSelect" class="client-select" onchange="setActiveClient(this.value)">
+            <option value="ALL" ${activeClient==='ALL'?'selected':''}>All clients</option>
+            ${clients.map(name => `<option value="${name}" ${activeClient===name?'selected':''}>${name}</option>`).join('')}
+          </select>
+          <p class="client-rail-copy">${activeClient==='ALL' ? 'Pick a client to focus the workspace.' : 'Showing this client across policies, claims, and payments.'}</p>
+        </div>
+        <div class="client-mini-kpis">
+          <div class="client-mini-card">
+            <span>Policies</span>
+            <strong>${snapshot.policies.length}</strong>
+            <em>${snapshot.activePolicies.length} active</em>
+          </div>
+          <div class="client-mini-card">
+            <span>Claims</span>
+            <strong>${snapshot.claims.length}</strong>
+            <em>${snapshot.claims.filter(c => c.status !== 'Settled').length} open</em>
+          </div>
+          <div class="client-mini-card">
+            <span>Payments</span>
+            <strong>${snapshot.payments.length}</strong>
+            <em>Latest ${snapshot.latestPayment}</em>
+          </div>
+          <div class="client-mini-card">
+            <span>Renewals</span>
+            <strong>${snapshot.renewals.length}</strong>
+            <em>${activeClient==='ALL'?'Across all clients':'Needs review'}</em>
+          </div>
+        </div>
+        <div class="client-list">
+          <button class="client-list-btn ${activeClient==='ALL'?'active':''}" onclick="setActiveClient('ALL')">
+            <span class="client-list-name">All clients</span>
+            <span class="client-list-meta">${A.policies.length} policies across your book</span>
+          </button>
+          ${clients.map(name => {
+            const item = getClientSnapshot(name);
+            return `<button class="client-list-btn ${activeClient===name?'active':''}" onclick="setActiveClient('${name.replace(/'/g, "\\'")}')">
+              <span class="client-list-name">${name}</span>
+              <span class="client-list-meta">${item.policies.length} policies · ${item.claims.length} claims · ${item.payments.length} payments</span>
+            </button>`;
+          }).join('')}
+        </div>
+      </aside>
+      <div class="client-main">
+        <div class="client-grid">
+          <div class="wcard">
+            <div class="whead">
+              <div class="wttl"><div class="wbar"></div><span class="wtitle">Policy Portfolio</span></div>
+              <span class="wcount">${snapshot.policies.length} policies</span>
+            </div>
+            <div class="wbody">
+              ${snapshot.policies.length ? `
+                <table class="ctbl">
+                  <thead><tr><th>Policy</th><th>Product</th><th>Status</th><th class="rt">Premium</th></tr></thead>
+                  <tbody>
+                    ${pp.items.map(p=>`
+                      <tr class="clickable" onclick="openPolicyModal('${p.id}')" title="Click to view full details">
+                        <td class="fw no-wrap" style="font-size:10.5px">${p.id}</td>
+                        <td>${p.product}</td>
+                        <td>${bdg(p.status)}</td>
+                        <td class="rt mu no-wrap">${p.premium}</td>
+                      </tr>`).join('')}
+                  </tbody>
+                </table>
+                ${pgHTML('pol',pp)}
+              ` : `<div class="client-empty">No policies to show for this client yet.</div>`}
+            </div>
+          </div>
+
+          <div class="wcard">
+            <div class="whead">
+              <div class="wttl"><div class="wbar"></div><span class="wtitle">Claims</span></div>
+              <span class="wcount">${snapshot.claims.length} total</span>
+            </div>
+            <div class="wbody">
+              ${snapshot.claims.length ? `
+                <table class="ctbl">
+                  <thead><tr><th>Claim ID</th><th>Product</th><th>Status</th><th class="rt">Amount</th></tr></thead>
+                  <tbody>
+                    ${cp.items.map(c=>`
+                      <tr class="clickable" onclick="openClaimModal('${c.id}')" title="Click to view details">
+                        <td class="fw no-wrap" style="font-size:10.5px">${c.id}</td>
+                        <td>${c.product}</td>
+                        <td>${bdg(c.status)}</td>
+                        <td class="rt mu no-wrap">${c.amount}</td>
+                      </tr>`).join('')}
+                  </tbody>
+                </table>
+                ${pgHTML('cl',cp)}
+              ` : `<div class="client-empty">No claims to show for this client right now.</div>`}
+            </div>
+          </div>
+
+          <div class="wcard">
+            <div class="whead">
+              <div class="wttl"><div class="wbar"></div><span class="wtitle">Payment History</span></div>
+              <span class="wcount">${snapshot.payments.length} records</span>
+            </div>
+            <div class="wbody">
+              ${snapshot.payments.length ? `
+                <table class="ctbl">
+                  <thead><tr><th>Date</th><th>Method</th><th>Status</th><th class="rt">Amount</th></tr></thead>
+                  <tbody>
+                    ${pm.items.map(p=>`
+                      <tr class="clickable" onclick="openPaymentModal(${A.payments.indexOf(p)})" title="Click to view details">
+                        <td>${p.date}</td>
+                        <td class="mu">${p.method}</td>
+                        <td>${bdg(p.status)}</td>
+                        <td class="rt mu no-wrap">${p.amount}</td>
+                      </tr>`).join('')}
+                  </tbody>
+                </table>
+                ${pgHTML('pm',pm)}
+              ` : `<div class="client-empty">No payments to show for this client yet.</div>`}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('efFile').addEventListener('change', function() {
+    const el = document.getElementById('efFileName');
+    el.textContent = this.files[0] ? this.files[0].name : 'No file selected';
+    el.style.color = this.files[0] ? '#059668' : 'var(--muted)';
+  });
+}
+
+function renderAgentWorkspaceV2() {
+  renderAgentWorkspace();
+  const snapshot = getClientSnapshot(activeClient);
+  const policyPage = pgd(snapshot.policies, 'cpol');
+  const selectedPolicy = getSelectedClientPolicy(snapshot);
+  activeClientPolicyId = selectedPolicy?.id || null;
+  const policyClaims = selectedPolicy ? getPolicyClaimsById(selectedPolicy.id) : [];
+  const policyPayments = selectedPolicy ? getPolicyPaymentsById(selectedPolicy.id) : [];
+  const latestClaim = policyClaims[0] || null;
+  const model = getPolicyModel(selectedPolicy);
+  const docMeta = getPolicyDocumentMeta(selectedPolicy);
+  const ipf = selectedPolicy ? getPolicyIpfState(selectedPolicy.id) : null;
+  const recentClaims = policyClaims.slice(0, 2);
+  const recentPayments = policyPayments.slice(0, 3);
+
+  document.getElementById('clientWorkspaceArea').innerHTML = `
+    <div class="client-shell">
+      <aside class="client-policy-wrap">
+        <div class="client-rail-top">
+          <div class="client-field-stack">
+            <label class="client-label" for="agentClientSelect">Select Client</label>
+            <div class="client-search-wrap client-combobox">
+              <span class="client-search-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="7"></circle>
+                  <path d="m20 20-3.5-3.5"></path>
+                </svg>
+              </span>
+              <input
+                id="agentClientSelect"
+                class="client-select"
+                type="text"
+                placeholder="All clients"
+                value="${activeClient === 'ALL' ? '' : activeClient.replace(/"/g, '&quot;')}"
+                onfocus="openAgentClientMenu()"
+                oninput="handleAgentClientInput(this.value)"
+                onkeydown="handleAgentClientKeydown(event)"
+                onblur="closeAgentClientMenu()"
+                autocomplete="off"
+              />
+              <div class="client-input-actions">
+                <button type="button" class="client-input-icon-btn" onclick="clearAgentClientInput()" aria-label="Clear client">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+                <button type="button" class="client-input-icon-btn" onclick="alert('Voice search coming soon.')" aria-label="Use microphone">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3a3 3 0 0 1 3 3v6a3 3 0 1 1-6 0V6a3 3 0 0 1 3-3z"></path>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                    <line x1="12" y1="19" x2="12" y2="22"></line>
+                  </svg>
+                </button>
+                <button type="button" class="client-combo-toggle" onclick="toggleAgentClientMenu()" aria-label="Toggle client list">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </button>
+              </div>
+              <div id="agentClientMenu" class="client-options" hidden></div>
+            </div>
+          </div>
+          <div class="client-field-stack">
+            <label class="client-label" for="agentPolicySearch">Search Policy Number</label>
+            <div class="client-search-row">
+              <div class="client-search-wrap">
+                <span class="client-search-icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="7"></circle>
+                    <path d="m20 20-3.5-3.5"></path>
+                  </svg>
+                </span>
+                <input
+                  id="agentPolicySearch"
+                  class="client-search"
+                  type="text"
+                  placeholder="Type a policy number"
+                  oninput="handleAgentPolicySearchInput()"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault(); searchAgentPolicy();}"
+                />
+                <div class="client-input-actions">
+                  <button type="button" class="client-input-icon-btn" onclick="clearAgentPolicySearch()" aria-label="Clear policy search">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                  <button type="button" class="client-input-icon-btn" onclick="alert('Voice search coming soon.')" aria-label="Use microphone">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 3a3 3 0 0 1 3 3v6a3 3 0 1 1-6 0V6a3 3 0 0 1 3-3z"></path>
+                      <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                      <line x1="12" y1="19" x2="12" y2="22"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <button type="button" class="client-search-btn" onclick="searchAgentPolicy()">Find</button>
+            </div>
+            <div id="agentPolicySearchNote" class="client-search-note"></div>
+          </div>
+        </div>
+        <div class="client-policy-list">
+          ${snapshot.policies.length ? policyPage.items.map(policy => `
+            <div class="client-policy-card ${selectedPolicy && selectedPolicy.id === policy.id ? 'active' : ''}" onclick="selectAgentPolicy('${policy.id}')">
+              <div class="client-policy-top">
+                <span class="client-policy-id">${policy.id}</span>
+                <span class="client-policy-amt">${policy.premium}</span>
+              </div>
+              <div class="client-policy-bottom">
+                <span class="client-policy-tag freq">${policy.tag || policy.product}</span>
+                <span class="client-policy-tag due">Due on: ${policy.due}</span>
+                <button class="client-policy-refresh" onclick="event.stopPropagation()" aria-label="Refresh policy">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <polyline points="1 20 1 14 7 14"></polyline>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>`).join('') : `<div class="no-data">No policies found for this client.</div>`}
+        </div>
+        ${snapshot.policies.length ? `
+          <div class="client-policy-footer">
+            <div class="txn-pagination">
+              <div class="pager-inline-text">Showing <strong>${policyPage.s}-${policyPage.e}</strong> of <strong>${policyPage.n}</strong></div>
+              <div class="pager-inline-arrows">
+                <button class="pg-nav" ${!policyPage.prev ? 'disabled' : ''} onclick="cpg('cpol',-1)">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <button class="pg-nav" ${!policyPage.next ? 'disabled' : ''} onclick="cpg('cpol',1)">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>` : ''}
+      </aside>
+      <div class="client-main">
+        <div class="client-widget-cols">
+          <div class="client-widget-col">
+            <div class="wcard">
+              <div class="whead">
+                <div class="wttl"><div class="wbar"></div><span class="wtitle">Policy Details</span></div>
+                ${selectedPolicy ? bdg(selectedPolicy.status) : ''}
+              </div>
+              <div class="wbody">
+                ${selectedPolicy ? `
+                  <div class="widget-stack">
+                    <p class="widget-kicker">${model ? model.overview.map(item => item[1]).slice(0, 3).join(' / ') : 'Policy summary available for this cover.'}</p>
+                    ${renderSummaryList([
+                      ['Policy holder', selectedPolicy.client],
+                      ['Product', selectedPolicy.product],
+                      ['Annual premium', selectedPolicy.premium],
+                      ['Sum covered', selectedPolicy.sumCovered],
+                      ['Renewal date', selectedPolicy.due]
+                    ])}
+                  </div>
+                  <div class="widget-action-end" style="gap:10px;flex-wrap:wrap">
+                    <button class="btn-outline-soft" onclick="openProductWidgetModal('documents','${selectedPolicy.id}')">Open Policy Pack</button>
+                    <button class="btn-red" onclick="openPolicyModal('${selectedPolicy.id}')">View Policy</button>
+                  </div>
+                ` : `<div class="no-data">No policy details available for this client.</div>`}
+              </div>
+            </div>
+
+            <div class="wcard">
+              <div class="whead">
+                <div class="wttl"><div class="wbar"></div><span class="wtitle">Document Centre</span></div>
+                <span class="wcount">${selectedPolicy ? docMeta.count : 0} docs</span>
+              </div>
+              <div class="wbody">
+                ${selectedPolicy && model ? `
+                  <div class="widget-stack">
+                    <p class="widget-kicker">${model.documents.copy}</p>
+                    ${renderChipRow(model.documents.items.slice(0, 3))}
+                  </div>
+                  <div class="widget-action-end">
+                    <button class="btn-red" onclick="openProductWidgetModal('documents','${selectedPolicy.id}')">Open Documents</button>
+                  </div>
+                ` : `<div class="no-data">Select a policy to view documents.</div>`}
+              </div>
+            </div>
+
+            <div class="wcard">
+              <div class="whead">
+                <div class="wttl"><div class="wbar"></div><span class="wtitle">${selectedPolicy && model ? model.asset.title : 'Policy Register'}</span></div>
+                <span class="wcount">${selectedPolicy ? selectedPolicy.tag || 'Policy' : 'Details'}</span>
+              </div>
+              <div class="wbody">
+                ${selectedPolicy && model ? `
+                  <div class="widget-stack">
+                    <p class="widget-kicker">This keeps the main insured item and its key policy note in view.</p>
+                    ${renderSummaryList(model.asset.summary)}
+                  </div>
+                  <div class="widget-action-end">
+                    <button class="btn-red" onclick="openProductWidgetModal('asset','${selectedPolicy.id}')">View Details</button>
+                  </div>
+                ` : `<div class="no-data">Select a policy to view its schedule details.</div>`}
+              </div>
+            </div>
+          </div>
+
+          <div class="client-widget-col">
+            <div class="wcard">
+              <div class="whead">
+                <div class="wttl"><div class="wbar"></div><span class="wtitle">${selectedPolicy && model ? model.coverage.title : 'Coverage Snapshot'}</span></div>
+                <span class="wcount">${selectedPolicy ? 'Core cover' : '-'}</span>
+              </div>
+              <div class="wbody">
+                ${selectedPolicy && model ? `
+                  <div class="widget-stack">
+                    <p class="widget-kicker">The most important limits, extensions, and active sections for this policy are surfaced here.</p>
+                    ${renderSummaryList(model.coverage.summary)}
+                    ${renderChipRow(model.coverage.sections)}
+                  </div>
+                  <div class="widget-action-end">
+                    <button class="btn-red" onclick="openProductWidgetModal('coverage','${selectedPolicy.id}')">View Cover</button>
+                  </div>
+                ` : `<div class="no-data">Select a policy to view its cover summary.</div>`}
+              </div>
+            </div>
+
+            <div class="wcard">
+              <div class="whead">
+                <div class="wttl"><div class="wbar"></div><span class="wtitle">Claims Summary</span></div>
+                <span class="wcount">${policyClaims.length} claim${policyClaims.length === 1 ? '' : 's'}</span>
+              </div>
+              <div class="wbody">
+                ${selectedPolicy && model ? `
+                  <div class="widget-stack">
+                    <p class="widget-kicker">${latestClaim ? `Latest claim: ${latestClaim.id} - ${latestClaim.status}` : 'No active claim yet. The claim checklist is ready when one is reported.'}</p>
+                    ${renderSummaryList(model.claims.summary)}
+                    ${recentClaims.length ? `
+                      <div class="txn-list">
+                        ${recentClaims.map(claim => `
+                          <div class="txn-card" onclick="openClaimModal('${claim.id}')">
+                            <div class="txn-left">
+                              <div class="txn-date">${claim.id}</div>
+                              <div class="txn-meta">${claim.filed}</div>
+                            </div>
+                            <div class="txn-right">
+                              <div class="txn-amt">${claim.amount}</div>
+                              ${bdg(claim.status)}
+                            </div>
+                          </div>
+                        `).join('')}
+                      </div>
+                    ` : renderChipRow(model.claims.checklist.slice(0, 3))}
+                  </div>
+                  <div class="widget-action-end">
+                    <button class="btn-red" onclick="openProductWidgetModal('claims','${selectedPolicy.id}')">Open Claim Support</button>
+                  </div>
+                ` : `<div class="no-data">Select a policy to view claim guidance and evidence needs.</div>`}
+              </div>
+            </div>
+
+            <div class="wcard">
+              <div class="whead">
+                <div class="wttl"><div class="wbar"></div><span class="wtitle">Renewal & Tasks</span></div>
+                ${selectedPolicy ? bdg(selectedPolicy.status) : ''}
+              </div>
+              <div class="wbody">
+                ${selectedPolicy && model ? `
+                  <div class="widget-stack">
+                    <p class="widget-kicker">This keeps the next renewal driver and the follow-up work in one place.</p>
+                    ${renderSummaryList(model.renewal.summary)}
+                    ${renderChipRow(model.renewal.tasks.slice(0, 3))}
+                  </div>
+                  <div class="widget-action-end">
+                    <button class="btn-red" onclick="openProductWidgetModal('renewal','${selectedPolicy.id}')">Review Renewal</button>
+                  </div>
+                ` : `<div class="no-data">Select a policy to review renewal and action items.</div>`}
+              </div>
+            </div>
+          </div>
+
+          <div class="client-widget-col">
+            <div class="wcard">
+              <div class="whead">
+                <div class="wttl"><div class="wbar"></div><span class="wtitle">Payments & IPF</span></div>
+                <span class="wcount">${ipf ? (ipf.status === 'ACTIVE' ? 'IPF active' : ipf.status === 'PENDING' ? 'Request pending' : 'No IPF') : 'Payments'}</span>
+              </div>
+              <div class="wbody">
+                ${selectedPolicy && model && ipf ? `
+                  <div class="widget-stack">
+                    <p class="widget-kicker">${ipf.status === 'ACTIVE' ? ipf.note : ipf.status === 'PENDING' ? ipf.note : 'No active instalment plan yet. Apply only if this client needs to spread the premium.'}</p>
+                    ${renderSummaryList(
+                      ipf.status === 'ACTIVE' || ipf.status === 'PENDING'
+                        ? [
+                            ['Annual premium', selectedPolicy.premium],
+                            ['Plan', ipf.plan],
+                            ['Deposit', ipf.deposit],
+                            ['Next due', ipf.nextDue],
+                            ['Instalment amount', ipf.monthly],
+                            ['Status', ipf.status === 'ACTIVE' ? 'Active' : 'Pending approval']
+                          ]
+                        : [
+                            ['Annual premium', selectedPolicy.premium],
+                            ['Amount paid', model.payments.summary[1][1]],
+                            ['Outstanding', model.payments.summary[2][1]],
+                            ['IPF status', 'Not active'],
+                            ['Suggested plan', `${ipf.suggestedInstalments} instalments`],
+                            ['Suggested deposit', `${ipf.suggestedDepositPct}% upfront`]
+                          ]
+                    )}
+                    ${renderChipRow((ipf.schedule || model.payments.schedule).slice(0, 3))}
+                  </div>
+                  <div class="widget-action-end" style="gap:10px;flex-wrap:wrap">
+                    <button class="btn-outline-soft" onclick="openProductWidgetModal('payments','${selectedPolicy.id}')">View Payments</button>
+                    <button class="btn-red" onclick="openIpfFlow('${selectedPolicy.id}')">${ipf.status === 'ACTIVE' ? 'Manage IPF' : ipf.status === 'PENDING' ? 'View Request' : 'Apply for IPF'}</button>
+                  </div>
+                ` : `<div class="no-data">Select a policy to view premium and instalment details.</div>`}
+              </div>
+            </div>
+
+            <div class="wcard">
+              <div class="whead">
+                <div class="wttl"><div class="wbar"></div><span class="wtitle">Transaction History</span></div>
+                <span class="wcount">${policyPayments.length} record${policyPayments.length === 1 ? '' : 's'}</span>
+              </div>
+              <div class="wbody">
+                ${selectedPolicy ? (
+                  recentPayments.length ? `
+                    <div class="txn-list">
+                      ${recentPayments.map(payment => `
+                        <div class="txn-card" onclick="openPaymentModal(${A.payments.indexOf(payment)})">
+                          <div class="txn-left">
+                            <div class="txn-date">${payment.date}</div>
+                            <div class="txn-meta">${payment.method}</div>
+                            <div class="txn-id-row">${payment.policy}</div>
+                          </div>
+                          <div class="txn-right">
+                            <div class="txn-amt">${payment.amount}</div>
+                            ${bdg(payment.status)}
+                          </div>
+                        </div>
+                      `).join('')}
+                    </div>
+                  ` : `<div class="no-data">No payments have been logged for this policy yet.</div>`
+                ) : `<div class="no-data">Select a policy to view transaction history.</div>`}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function submitEf() {
+  if (!document.getElementById('efNum').value.trim()   ||
+      !document.getElementById('efAmt').value.trim()   ||
+      !document.getElementById('efPeriod').value       ||
+      !document.getElementById('efDate').value) {
+    alert('Please complete all fields.'); return;
+  }
+  if (!document.getElementById('efFile').files[0]) {
+    alert('Please attach your eFRIS invoice PDF.'); return;
+  }
+  const n = document.getElementById('efNotif');
+  n.classList.add('show');
+  n.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+function resetEf() {
+  ['efNum','efAmt','efPeriod','efDate'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+  const fi=document.getElementById('efFile'); if(fi) fi.value='';
+  const fn=document.getElementById('efFileName'); if(fn){ fn.textContent='No file selected'; fn.style.color='var(--muted)'; }
+  const nb=document.getElementById('efNotif'); if(nb) nb.classList.remove('show');
+}
+function downloadSchedule() {
+  alert('Downloading: Commission_Schedule_' + A.code + '_Apr2026.pdf');
+}
+
+(function () {
+  const drawer = document.getElementById('site-ai-drawer');
+  const messages = document.getElementById('site-ai-messages');
+  const input = document.getElementById('site-ai-input');
+  const openIcon = document.getElementById('site-ai-open-icon');
+  const closeIcon = document.getElementById('site-ai-close-icon');
+  if (!drawer || !messages || !input || !openIcon || !closeIcon) return;
+
+  let inited = false;
+  let busy = false;
+  const botSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 16 0"/><path d="M3 13v3a2 2 0 0 0 2 2h2v-7H5a2 2 0 0 0-2 2Z"/><path d="M21 13v3a2 2 0 0 1-2 2h-2v-7h2a2 2 0 0 1 2 2Z"/><path d="M9 18a3 3 0 0 0 3 3h2"/></svg>';
+  const userSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+
+  function esc(text) {
+    return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  function fmtTime() {
+    return new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  }
+  function setOpenState(open) {
+    drawer.classList.toggle('site-ai-hidden', !open);
+    openIcon.classList.toggle('site-ai-hidden', open);
+    closeIcon.classList.toggle('site-ai-hidden', !open);
+  }
+  function addMessage(kind, text) {
+    const row = document.createElement('div');
+    row.className = `site-ai-msg ${kind}`;
+    row.innerHTML = `
+      <div class="site-ai-msg-icon">${kind === 'bot' ? botSvg : userSvg}</div>
+      <div class="site-ai-bubble">
+        <div style="white-space:pre-line">${esc(text)}</div>
+        <div class="site-ai-time">${fmtTime()}</div>
+      </div>`;
+    messages.appendChild(row);
+    messages.scrollTop = messages.scrollHeight;
+  }
+  function showTyping() {
+    const row = document.createElement('div');
+    row.id = 'site-ai-typing';
+    row.className = 'site-ai-msg bot';
+    row.innerHTML = `
+      <div class="site-ai-msg-icon">${botSvg}</div>
+      <div class="site-ai-bubble">
+        <div class="site-ai-typing"><span></span><span></span><span></span></div>
+      </div>`;
+    messages.appendChild(row);
+    messages.scrollTop = messages.scrollHeight;
+  }
+  function hideTyping() {
+    const row = document.getElementById('site-ai-typing');
+    if (row) row.remove();
+  }
+  function getReply(text) {
+    const t = text.toLowerCase();
+    if (t.match(/commission|payment/)) return "I can help you check commissions, payment records, or what is still pending.";
+    if (t.match(/claim|claims/)) return "I can help you review claim activity, claim status, or what needs follow-up next.";
+    if (t.match(/client|policy/)) return "I can help you find policy details, client records, and renewal information.";
+    if (t.match(/renew/)) return "I can help you review renewals and what needs action next.";
+    if (t.match(/hello|hi|hey/)) return "Hello. How can I help you today?";
+    return "I can help with clients, policies, claims, commissions, and renewals. What would you like to check?";
+  }
+
+  window.siteAiToggle = function () {
+    const isHidden = drawer.classList.contains('site-ai-hidden');
+    if (isHidden) window.siteAiOpenChat();
+    else window.siteAiCloseChat();
+  };
+  window.siteAiOpenChat = function () {
+    setOpenState(true);
+    if (!inited) {
+      inited = true;
+      addMessage('bot', "Hello. Welcome to Britam support. How can we help you today?");
+    }
+    setTimeout(() => input.focus(), 80);
+  };
+  window.siteAiCloseChat = function () {
+    setOpenState(false);
+  };
+  window.siteAiSend = function () {
+    const text = input.value.trim();
+    if (!text || busy) return;
+    input.value = '';
+    addMessage('user', text);
+    busy = true;
+    showTyping();
+    setTimeout(() => {
+      hideTyping();
+      addMessage('bot', getReply(text));
+      busy = false;
+    }, 700);
+  };
+
+  input.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      window.siteAiSend();
+    }
+  });
+})();
+
+document.addEventListener('DOMContentLoaded', renderAgentWorkspaceV2);
+</script>
+</body>
+</html>

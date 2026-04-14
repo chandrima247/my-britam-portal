@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wc -l *.html)",
+      "WebSearch",
+      "WebFetch(domain:ulii.org)",
+      "WebFetch(domain:jubileeinsurance.com)",
+      "WebFetch(domain:ug.britam.com)",
+      "WebFetch(domain:www.dentons.com)",
+      "WebFetch(domain:www.liferay.com)",
+      "WebFetch(domain:www.uia.co.ug)",
+      "WebFetch(domain:ira.go.ug)",
+      "WebFetch(domain:inscloud.net)",
+      "WebFetch(domain:automag.ug)"
+    ]
+  }
+}

@@ -1,0 +1,860 @@
+
+// Hero Carousel
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('#heroCarousel .hero-slide'));
+  var dotWrap = document.getElementById('heroDots');
+  var dots = dotWrap ? Array.prototype.slice.call(dotWrap.querySelectorAll('.hero-dot')) : [];
+  var prev = document.getElementById('heroPrev_removed');
+  var next = document.getElementById('heroNext_removed');
+  var cur = 0, total = slides.length, timer;
+
+  if(!slides.length){ return; }
+
+  if(dotWrap && dots.length !== total){
+    dotWrap.innerHTML = '';
+    dots = slides.map(function(_, i){
+      var dot = document.createElement('button');
+      dot.className = 'hero-dot' + (i === 0 ? ' active' : '');
+      dot.setAttribute('aria-label', 'Slide ' + (i + 1));
+      dot.type = 'button';
+      dotWrap.appendChild(dot);
+      return dot;
+    });
+  }
+
+  function goTo(n){
+    cur = (n + total) % total;
+    slides.forEach(function(slide, i){ slide.classList.toggle('active', i === cur); });
+    dots.forEach(function(dot, i){ dot.classList.toggle('active', i === cur); });
+  }
+  function autoPlay(){ clearInterval(timer); timer = setInterval(function(){ goTo(cur + 1); }, 5000); }
+  function reset(){ autoPlay(); }
+
+  dots.forEach(function(d, i){ d.addEventListener('click', function(){ goTo(i); reset(); }); });
+  if(prev) prev.addEventListener('click', function(){ goTo(cur - 1); reset(); });
+  if(next) next.addEventListener('click', function(){ goTo(cur + 1); reset(); });
+
+  var el = document.getElementById('heroCarousel');
+  if(el){
+    el.addEventListener('mouseenter', function(){ clearInterval(timer); });
+    el.addEventListener('mouseleave', autoPlay);
+  }
+  goTo(0);
+  autoPlay();
+})();
+
+// Premium Calculator
+(function(){
+  var planData = {
+    classic: {
+      name: 'Classic',
+      inpatientLimit: 15000000,
+      outpatientLimit: 1500000,
+      dentalLimit: 150000,
+      opticalLimit: 150000,
+      lastExpenseLimit: 1500000,
+      brochurePremium: 1010038,
+      wellnessCheck: 'N/A',
+      chronicLimit: 7500000,
+      cancerLimit: 3000000,
+      bedLimit: 'General ward bed',
+      premiums: { inpatient: 348141, outpatient: 481254, dental: 58877, optical: 58877, lastExpense: 23039 }
+    },
+    premier: {
+      name: 'Premier',
+      inpatientLimit: 30000000,
+      outpatientLimit: 1500000,
+      dentalLimit: 300000,
+      opticalLimit: 300000,
+      lastExpenseLimit: 1500000,
+      brochurePremium: 1241577,
+      wellnessCheck: 'N/A',
+      chronicLimit: 9000000,
+      cancerLimit: 6000000,
+      bedLimit: 'General ward bed',
+      premiums: { inpatient: 542690, outpatient: 481254, dental: 76796, optical: 76796, lastExpense: 23039 }
+    },
+    advanced: {
+      name: 'Advanced',
+      inpatientLimit: 60000000,
+      outpatientLimit: 2400000,
+      dentalLimit: 600000,
+      opticalLimit: 600000,
+      lastExpenseLimit: 2250000,
+      brochurePremium: 1635194,
+      wellnessCheck: 'N/A',
+      chronicLimit: 12000000,
+      cancerLimit: 7500000,
+      bedLimit: 'General ward bed',
+      premiums: { inpatient: 668123, outpatient: 575969, dental: 156151, optical: 156151, lastExpense: 35838 }
+    },
+    executive: {
+      name: 'Executive',
+      inpatientLimit: 90000000,
+      outpatientLimit: 3000000,
+      dentalLimit: 900000,
+      opticalLimit: 900000,
+      lastExpenseLimit: 3000000,
+      brochurePremium: 2003084,
+      wellnessCheck: 500000,
+      chronicLimit: 15000000,
+      cancerLimit: 9000000,
+      bedLimit: 'Standard private room up to UGX 375,000/day',
+      premiums: { inpatient: 831955, outpatient: 614366, dental: 232947, optical: 232947, lastExpense: 46077 }
+    },
+    royal: {
+      name: 'Royal',
+      inpatientLimit: 150000000,
+      outpatientLimit: 4500000,
+      dentalLimit: 1200000,
+      opticalLimit: 1200000,
+      lastExpenseLimit: 3000000,
+      brochurePremium: 2569069,
+      wellnessCheck: 500000,
+      chronicLimit: 30000000,
+      cancerLimit: 15000000,
+      bedLimit: 'Standard private room up to UGX 500,000/day',
+      premiums: { inpatient: 959948, outpatient: 737240, dental: 389099, optical: 389099, lastExpense: 46077 }
+    }
+  };
+
+  var levyRate = 0.005;
+  var stampDuty = 35000;
+  var ipfOptions = [
+    { months: 9, interestRate: 0.10, processingRate: 0.03, bank: 'Cairo Bank', repaymentFactor: 1.102051192933269 },
+    { months: 6, interestRate: 0.06, processingRate: 0.03, bank: 'Cairo Bank', repaymentFactor: 1.0999921577482356 }
+  ];
+  var planOrder = ['classic', 'premier', 'advanced', 'executive', 'royal'];
+  var state = { plan: 'classic', planType: 'individual' };
+  var refs = {
+    planButtons: Array.prototype.slice.call(document.querySelectorAll('[data-plan]')),
+    planTypeButtons: Array.prototype.slice.call(document.querySelectorAll('[data-plan-type]')),
+    outpatientToggle: document.getElementById('outpatientToggle'),
+    dentalToggle: document.getElementById('dentalToggle'),
+    opticalToggle: document.getElementById('opticalToggle'),
+    outpatientCard: document.getElementById('outpatientCard'),
+    dentalCard: document.getElementById('dentalCard'),
+    opticalCard: document.getElementById('opticalCard'),
+    childrenCount: document.getElementById('childrenCount'),
+    dependentsCount: document.getElementById('dependentsCount'),
+    familyMembersRow: document.getElementById('familyMembersRow'),
+    outpatientLimitHint: document.getElementById('outpatientLimitHint'),
+    dentalLimitHint: document.getElementById('dentalLimitHint'),
+    opticalLimitHint: document.getElementById('opticalLimitHint'),
+    totalPremium: document.getElementById('totalPremium'),
+    quoteCovers: document.getElementById('quoteCovers'),
+    quoteInpatientVal: document.getElementById('quoteInpatientVal'),
+    quoteLastExpenseVal: document.getElementById('quoteLastExpenseVal'),
+    quoteOutpatientLine: document.getElementById('quoteOutpatientLine'),
+    quoteOutpatientVal: document.getElementById('quoteOutpatientVal'),
+    quoteDentalLine: document.getElementById('quoteDentalLine'),
+    quoteDentalVal: document.getElementById('quoteDentalVal'),
+    quoteOpticalLine: document.getElementById('quoteOpticalLine'),
+    quoteOpticalVal: document.getElementById('quoteOpticalVal'),
+    addonInfoOutpatient: document.getElementById('addonInfoOutpatient'),
+    addonInfoDental: document.getElementById('addonInfoDental'),
+    addonInfoOptical: document.getElementById('addonInfoOptical'),
+    rateInpatient: document.getElementById('rateInpatient'),
+    priceInpatient: document.getElementById('priceInpatient'),
+    priceOutpatientRow: document.getElementById('priceOutpatientRow'),
+    rateOutpatient: document.getElementById('rateOutpatient'),
+    priceOutpatient: document.getElementById('priceOutpatient'),
+    priceDentalRow: document.getElementById('priceDentalRow'),
+    rateDental: document.getElementById('rateDental'),
+    priceDental: document.getElementById('priceDental'),
+    priceOpticalRow: document.getElementById('priceOpticalRow'),
+    rateOptical: document.getElementById('rateOptical'),
+    priceOptical: document.getElementById('priceOptical'),
+    rateLastExpense: document.getElementById('rateLastExpense'),
+    priceLastExpense: document.getElementById('priceLastExpense'),
+    priceSubtotal: document.getElementById('priceSubtotal'),
+    priceLevy: document.getElementById('priceLevy'),
+    priceStamp: document.getElementById('priceStamp'),
+    openPlanDetailsModal: document.getElementById('openPlanDetailsModal'),
+    planDetailsModal: document.getElementById('planDetailsModal'),
+    closePlanDetailsModal: document.getElementById('closePlanDetailsModal'),
+    planDetailsTable: document.getElementById('planDetailsTable'),
+    openBreakdownModal: document.getElementById('openBreakdownModal'),
+    premiumBreakdownModal: document.getElementById('premiumBreakdownModal'),
+    closeBreakdownModal: document.getElementById('closeBreakdownModal'),
+    ipfContainer: document.getElementById('ipfContainer'),
+    quoteIpfFrom: document.getElementById('quoteIpfFrom'),
+    jumpToInstallments: document.getElementById('jumpToInstallments'),
+    btnSave: document.getElementById('btnSave'),
+    btnDownload: document.getElementById('btnDownload'),
+    btnShare: document.getElementById('btnShare')
+  };
+
+  if(!refs.planButtons.length){ return; }
+
+  function money(value){
+    return 'UGX ' + Math.round(value).toLocaleString('en-UG');
+  }
+
+  function memberLabel(count){
+    return count === 1 ? '1 member' : count + ' members';
+  }
+
+  function textOrMoney(value){
+    return typeof value === 'number' ? money(value) : value;
+  }
+
+  function clampCount(input, min){
+    var value = parseInt(input.value, 10);
+    if(isNaN(value) || value < min){ value = min; }
+    input.value = value;
+    return value;
+  }
+
+  function renderPlanDetailsTable(){
+    if(!refs.planDetailsTable){ return; }
+
+    var limitRows = [
+      { label: 'Inpatient', key: 'inpatientLimit' },
+      { label: 'Outpatient', key: 'outpatientLimit' },
+      { label: 'Dental', key: 'dentalLimit' },
+      { label: 'Optical', key: 'opticalLimit' },
+      { label: 'Last Expense', key: 'lastExpenseLimit' }
+    ];
+
+    var html = '<thead><tr><th>Plan</th>';
+    planOrder.forEach(function(planKey){
+      var plan = planData[planKey];
+      html += '<th>' + plan.name + '</th>';
+    });
+    html += '</tr></thead><tbody>';
+    html += '<tr class="plan-table-band"><th>Benefit</th><th colspan="' + planOrder.length + '" class="plan-table-center">Limits up to</th></tr>';
+
+    limitRows.forEach(function(row){
+      html += '<tr><th scope="row">' + row.label + '</th>';
+      planOrder.forEach(function(planKey){
+        var plan = planData[planKey];
+        html += '<td>' + money(plan[row.key]) + '</td>';
+      });
+      html += '</tr>';
+    });
+
+    html += '<tr class="plan-table-band"><th>Age band</th><th colspan="' + planOrder.length + '" class="plan-table-center">Premium</th></tr>';
+    html += '<tr class="plan-premium-row"><th scope="row">1 month - 17 years</th>';
+    planOrder.forEach(function(planKey){
+      html += '<td>' + money(planData[planKey].brochurePremium) + '</td>';
+    });
+    html += '</tr>';
+
+    html += '<tr class="plan-wellness-row"><th scope="row">Wellness check</th>';
+    planOrder.forEach(function(planKey){
+      html += '<td>' + textOrMoney(planData[planKey].wellnessCheck) + '</td>';
+    });
+    html += '</tr>';
+
+    html += '</tbody>';
+    refs.planDetailsTable.innerHTML = html;
+  }
+
+  function getPlan(){
+    return planData[state.plan] || planData.classic;
+  }
+
+  function getMemberCount(){
+    if(state.planType === 'individual') return 1;
+    return clampCount(refs.childrenCount, 1);
+  }
+
+  function setPlan(planKey){
+    state.plan = planKey;
+    refs.planButtons.forEach(function(button){
+      var active = button.getAttribute('data-plan') === planKey;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+  }
+
+  function toggleAddonCard(card, isActive, isDisabled){
+    if(!card){ return; }
+    card.classList.toggle('active', isActive);
+    card.classList.toggle('disabled', !!isDisabled);
+  }
+
+  function syncAddonAvailability(plan){
+    refs.outpatientLimitHint.textContent = money(plan.outpatientLimit);
+    refs.dentalLimitHint.textContent = money(plan.dentalLimit);
+    refs.opticalLimitHint.textContent = money(plan.opticalLimit);
+
+    toggleAddonCard(refs.outpatientCard, refs.outpatientToggle.checked, false);
+
+    if(!refs.outpatientToggle.checked){
+      refs.dentalToggle.checked = false;
+      refs.opticalToggle.checked = false;
+      refs.dentalToggle.disabled = true;
+      refs.opticalToggle.disabled = true;
+    } else {
+      refs.dentalToggle.disabled = false;
+      refs.opticalToggle.disabled = false;
+    }
+
+    toggleAddonCard(refs.dentalCard, refs.dentalToggle.checked, refs.dentalToggle.disabled);
+    toggleAddonCard(refs.opticalCard, refs.opticalToggle.checked, refs.opticalToggle.disabled);
+  }
+
+  function currentBreakdown(){
+    var plan = getPlan();
+    var count = getMemberCount();
+    var inpatient = plan.premiums.inpatient * count;
+    var outpatient = refs.outpatientToggle.checked ? plan.premiums.outpatient * count : 0;
+    var dental = refs.dentalToggle.checked ? plan.premiums.dental * count : 0;
+    var optical = refs.opticalToggle.checked ? plan.premiums.optical * count : 0;
+    var lastExpense = plan.premiums.lastExpense * count;
+    var subtotal = inpatient + outpatient + dental + optical + lastExpense;
+    var levy = subtotal * levyRate;
+    var total = subtotal + levy + stampDuty;
+
+    return {
+      plan: plan,
+      count: count,
+      children: clampCount(refs.childrenCount, 1),
+      dependents: clampCount(refs.dependentsCount, 0),
+      inpatient: inpatient,
+      outpatient: outpatient,
+      dental: dental,
+      optical: optical,
+      lastExpense: lastExpense,
+      subtotal: subtotal,
+      levy: levy,
+      stampDuty: stampDuty,
+      total: total
+    };
+  }
+
+  function getIpfRows(total){
+    return ipfOptions.map(function(option){
+      var interestAmount = total * option.interestRate;
+      var processingAmount = total * option.processingRate;
+      var financedTotal = total * option.repaymentFactor;
+      return {
+        months: option.months,
+        bank: option.bank,
+        interestRate: option.interestRate,
+        processingRate: option.processingRate,
+        interestAmount: interestAmount,
+        processingAmount: processingAmount,
+        principal: total,
+        financedTotal: financedTotal,
+        monthlyPayment: financedTotal / option.months
+      };
+    });
+  }
+
+  function percent(value){
+    return Math.round(value * 100) + '%';
+  }
+
+  function renderIpf(data){
+    var rows = getIpfRows(data.total);
+    refs.ipfContainer.innerHTML = rows.map(function(row){
+      return '<tr>'
+        + '<td>' + row.months + ' months</td>'
+        + '<td>' + percent(row.interestRate) + '</td>'
+        + '<td class="ipf-table-amount">' + money(row.monthlyPayment) + '<span style="font-size:10px;font-weight:400;color:var(--text-lt);margin-left:3px">/mo</span></td>'
+        + '</tr>';
+    }).join('');
+    return rows;
+  }
+
+  function refreshQuoteLimitRows(){
+    var rows = [
+      refs.quoteOutpatientLine,
+      refs.quoteDentalLine,
+      refs.quoteOpticalLine
+    ];
+    var allRows = Array.prototype.slice.call(document.querySelectorAll('.quote-line-items .quote-line'));
+    allRows.forEach(function(row){
+      row.classList.remove('is-last-visible');
+    });
+    var visibleRows = allRows.filter(function(row){
+      return row.style.display !== 'none';
+    });
+    if(visibleRows.length){
+      visibleRows[visibleRows.length - 1].classList.add('is-last-visible');
+    }
+  }
+
+  function openCalcModal(modal){
+    [refs.premiumBreakdownModal, refs.planDetailsModal].forEach(function(item){
+      if(!item){ return; }
+      var isTarget = item === modal;
+      item.classList.toggle('open', isTarget);
+      item.setAttribute('aria-hidden', isTarget ? 'false' : 'true');
+    });
+    document.body.style.overflow = modal ? 'hidden' : '';
+  }
+
+  function closeCalcModal(modal){
+    if(!modal){ return; }
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  function updateSummary(data){
+    refs.totalPremium.textContent = money(data.total);
+    refs.quoteCovers.textContent = 'Covers ' + data.count + (data.count === 1 ? ' person' : ' people');
+
+    refs.quoteInpatientVal.textContent = money(data.plan.inpatientLimit);
+    refs.quoteLastExpenseVal.textContent = money(data.plan.lastExpenseLimit);
+
+    refs.quoteOutpatientLine.style.display = refs.outpatientToggle.checked ? '' : 'none';
+    refs.quoteOutpatientVal.textContent = money(data.plan.outpatientLimit);
+
+    refs.quoteDentalLine.style.display = refs.dentalToggle.checked ? '' : 'none';
+    refs.quoteDentalVal.textContent = money(data.plan.dentalLimit);
+
+    refs.quoteOpticalLine.style.display = refs.opticalToggle.checked ? '' : 'none';
+    refs.quoteOpticalVal.textContent = money(data.plan.opticalLimit);
+    refreshQuoteLimitRows();
+
+    refs.addonInfoOutpatient.textContent = money(data.plan.outpatientLimit);
+    refs.addonInfoDental.textContent = money(data.plan.dentalLimit);
+    refs.addonInfoOptical.textContent = money(data.plan.opticalLimit);
+
+    refs.rateInpatient.textContent = money(data.plan.premiums.inpatient) + ' x ' + memberLabel(data.count);
+    refs.priceInpatient.textContent = money(data.inpatient);
+
+    refs.priceOutpatientRow.hidden = !refs.outpatientToggle.checked;
+    refs.rateOutpatient.textContent = money(data.plan.premiums.outpatient) + ' x ' + memberLabel(data.count);
+    refs.priceOutpatient.textContent = money(data.outpatient);
+
+    refs.priceDentalRow.hidden = !refs.dentalToggle.checked;
+    refs.rateDental.textContent = money(data.plan.premiums.dental) + ' x ' + memberLabel(data.count);
+    refs.priceDental.textContent = money(data.dental);
+
+    refs.priceOpticalRow.hidden = !refs.opticalToggle.checked;
+    refs.rateOptical.textContent = money(data.plan.premiums.optical) + ' x ' + memberLabel(data.count);
+    refs.priceOptical.textContent = money(data.optical);
+
+    refs.rateLastExpense.textContent = money(data.plan.premiums.lastExpense) + ' x ' + memberLabel(data.count);
+    refs.priceLastExpense.textContent = money(data.lastExpense);
+    refs.priceSubtotal.textContent = money(data.subtotal);
+    refs.priceLevy.textContent = money(data.levy);
+    refs.priceStamp.textContent = money(data.stampDuty);
+
+    var ipfRows = renderIpf(data);
+    if(ipfRows.length && refs.quoteIpfFrom){
+      var lightest = ipfRows.reduce(function(best, row){
+        return row.monthlyPayment < best.monthlyPayment ? row : best;
+      }, ipfRows[0]);
+      refs.quoteIpfFrom.textContent = money(lightest.monthlyPayment) + '/mo';
+    }
+  }
+
+  function getQuoteData(){
+    var data = currentBreakdown();
+    var ipfRows = getIpfRows(data.total);
+    var benefits = ['Inpatient'];
+    if(refs.outpatientToggle.checked){ benefits.push('Outpatient'); }
+    if(refs.dentalToggle.checked){ benefits.push('Dental'); }
+    if(refs.opticalToggle.checked){ benefits.push('Optical'); }
+    benefits.push('Last expense');
+
+    return {
+      generatedOn: new Date().toLocaleDateString('en-UG', { day: 'numeric', month: 'long', year: 'numeric' }),
+      planName: data.plan.name,
+      benefits: benefits,
+      children: data.children,
+      dependents: data.dependents,
+      members: data.count,
+      inpatientLimit: money(data.plan.inpatientLimit),
+      outpatientLimit: refs.outpatientToggle.checked ? money(data.plan.outpatientLimit) : null,
+      dentalLimit: refs.dentalToggle.checked ? money(data.plan.dentalLimit) : null,
+      opticalLimit: refs.opticalToggle.checked ? money(data.plan.opticalLimit) : null,
+      lastExpenseLimit: money(data.plan.lastExpenseLimit),
+      inpatientPremium: money(data.inpatient),
+      outpatientPremium: refs.outpatientToggle.checked ? money(data.outpatient) : null,
+      dentalPremium: refs.dentalToggle.checked ? money(data.dental) : null,
+      opticalPremium: refs.opticalToggle.checked ? money(data.optical) : null,
+      lastExpensePremium: money(data.lastExpense),
+      subtotal: money(data.subtotal),
+      levy: money(data.levy),
+      stampDuty: money(data.stampDuty),
+      total: money(data.total),
+      ipfRows: ipfRows.map(function(row){
+        return {
+          months: row.months,
+          interest: percent(row.interestRate),
+          processingFee: percent(row.processingRate),
+          monthlyPayment: money(row.monthlyPayment)
+        };
+      })
+    };
+  }
+
+  function toText(quote){
+    var lines = [
+      'Jubilee J-Junior Indicative Quote',
+      'Generated: ' + quote.generatedOn,
+      '',
+      'PLAN AND MEMBERS',
+      'Plan: ' + quote.planName,
+      'Benefits: ' + quote.benefits.join(', '),
+      'Children: ' + quote.children,
+      'Other dependents: ' + quote.dependents,
+      'Total insured members: ' + quote.members,
+      '',
+      'COVERAGE SUMMARY',
+      'Inpatient limit: ' + quote.inpatientLimit
+    ];
+
+    if(quote.outpatientLimit){ lines.push('Outpatient limit: ' + quote.outpatientLimit); }
+    if(quote.dentalLimit){ lines.push('Dental limit: ' + quote.dentalLimit); }
+    if(quote.opticalLimit){ lines.push('Optical limit: ' + quote.opticalLimit); }
+    lines.push('Last expense limit: ' + quote.lastExpenseLimit);
+    lines.push('');
+    lines.push('PRICING BREAKDOWN');
+    lines.push('Inpatient premium: ' + quote.inpatientPremium);
+    if(quote.outpatientPremium){ lines.push('Outpatient premium: ' + quote.outpatientPremium); }
+    if(quote.dentalPremium){ lines.push('Dental premium: ' + quote.dentalPremium); }
+    if(quote.opticalPremium){ lines.push('Optical premium: ' + quote.opticalPremium); }
+    lines.push('Last expense benefit: ' + quote.lastExpensePremium);
+    lines.push('Subtotal: ' + quote.subtotal);
+    lines.push('Training levy (0.5%): ' + quote.levy);
+    lines.push('Stamp duty: ' + quote.stampDuty);
+    lines.push('Final total premium: ' + quote.total);
+    lines.push('');
+    lines.push('IPF OPTIONS');
+    quote.ipfRows.forEach(function(row){
+      lines.push(row.months + ' months: ' + row.monthlyPayment + '/mo | Interest ' + row.interest + ' | Processing fee ' + row.processingFee);
+    });
+    lines.push('');
+    lines.push('Notes: Premiums vary based on selected plan and optional benefits. Final premium remains subject to underwriting. Additional charges such as levy and stamp duty apply. Certain hospitals or extended coverage may affect pricing.');
+    return lines.join('\n');
+  }
+
+  function escapeHtml(value){
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function buildHtml(quote){
+    var summaryRows = [
+      '<tr><td>Selected plan</td><td>' + escapeHtml(quote.planName) + '</td></tr>',
+      '<tr><td>Selected benefits</td><td>' + escapeHtml(quote.benefits.join(', ')) + '</td></tr>',
+      '<tr><td>Children</td><td>' + escapeHtml(quote.children) + '</td></tr>',
+      '<tr><td>Other dependents</td><td>' + escapeHtml(quote.dependents) + '</td></tr>',
+      '<tr><td>Total insured members</td><td>' + escapeHtml(quote.members) + '</td></tr>',
+      '<tr><td>Inpatient limit</td><td>' + escapeHtml(quote.inpatientLimit) + '</td></tr>'
+    ];
+    if(quote.outpatientLimit){ summaryRows.push('<tr><td>Outpatient limit</td><td>' + escapeHtml(quote.outpatientLimit) + '</td></tr>'); }
+    if(quote.dentalLimit){ summaryRows.push('<tr><td>Dental limit</td><td>' + escapeHtml(quote.dentalLimit) + '</td></tr>'); }
+    if(quote.opticalLimit){ summaryRows.push('<tr><td>Optical limit</td><td>' + escapeHtml(quote.opticalLimit) + '</td></tr>'); }
+    summaryRows.push('<tr><td>Last expense limit</td><td>' + escapeHtml(quote.lastExpenseLimit) + '</td></tr>');
+
+    var premiumRows = [
+      '<tr><td>Inpatient premium</td><td>' + escapeHtml(quote.inpatientPremium) + '</td></tr>'
+    ];
+    if(quote.outpatientPremium){ premiumRows.push('<tr><td>Outpatient premium</td><td>' + escapeHtml(quote.outpatientPremium) + '</td></tr>'); }
+    if(quote.dentalPremium){ premiumRows.push('<tr><td>Dental premium</td><td>' + escapeHtml(quote.dentalPremium) + '</td></tr>'); }
+    if(quote.opticalPremium){ premiumRows.push('<tr><td>Optical premium</td><td>' + escapeHtml(quote.opticalPremium) + '</td></tr>'); }
+    premiumRows.push('<tr><td>Last expense benefit</td><td>' + escapeHtml(quote.lastExpensePremium) + '</td></tr>');
+    premiumRows.push('<tr><td>Subtotal</td><td>' + escapeHtml(quote.subtotal) + '</td></tr>');
+    premiumRows.push('<tr><td>Training levy (0.5%)</td><td>' + escapeHtml(quote.levy) + '</td></tr>');
+    premiumRows.push('<tr><td>Stamp duty</td><td>' + escapeHtml(quote.stampDuty) + '</td></tr>');
+    premiumRows.push('<tr><td>Final total premium</td><td>' + escapeHtml(quote.total) + '</td></tr>');
+    var ipfRows = quote.ipfRows.map(function(row){
+      return '<tr><td>' + row.months + ' months</td><td>' + escapeHtml(row.monthlyPayment) + '/mo</td></tr>';
+    });
+
+    return '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>J-Junior Quote</title><style>' +
+      'body{font-family:Arial,sans-serif;color:#111;margin:0;background:#fff} .wrap{max-width:760px;margin:0 auto;padding:36px 28px} h1{font-size:24px;margin:0 0 4px} p{margin:0} .meta{font-size:12px;color:#666;margin-bottom:24px} .hero{background:#111;color:#fff;border-radius:14px;padding:18px 20px;margin-bottom:20px} .hero small{display:block;font-size:11px;opacity:.7;margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em} .hero strong{font-size:30px;color:#fff} h2{font-size:14px;text-transform:uppercase;letter-spacing:.08em;margin:22px 0 10px;color:#666} table{width:100%;border-collapse:collapse} td{padding:10px 0;border-bottom:1px solid #ececec;font-size:14px;vertical-align:top} td:last-child{text-align:right;font-weight:700} .note{margin-top:20px;font-size:12px;color:#666;line-height:1.6}' +
+      '</style></head><body><div class="wrap"><h1>Jubilee J-Junior</h1><p class="meta">Indicative quote generated ' + escapeHtml(quote.generatedOn) + '</p><div class="hero"><small>Final total premium</small><strong>' + escapeHtml(quote.total) + '</strong></div><h2>Plan and cover</h2><table>' + summaryRows.join('') + '</table><h2>Premium breakdown</h2><table>' + premiumRows.join('') + '</table><h2>IPF monthly options</h2><table>' + ipfRows.join('') + '</table><p class="note">Premiums vary based on selected plan and optional benefits. Final premium remains subject to underwriting. Additional charges such as levy and stamp duty apply. Certain hospitals or extended coverage may affect pricing.</p></div></body></html>';
+  }
+
+  function downloadFile(name, body, type){
+    var blob = new Blob([body], { type: type });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  function toast(message){
+    var el = document.getElementById('qaToast');
+    if(!el){
+      el = document.createElement('div');
+      el.id = 'qaToast';
+      el.className = 'qa-toast';
+      document.body.appendChild(el);
+    }
+    el.textContent = message;
+    el.classList.add('show');
+    clearTimeout(el._timer);
+    el._timer = setTimeout(function(){ el.classList.remove('show'); }, 2600);
+  }
+
+  function copyText(text){
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function(resolve, reject){
+      try {
+        var area = document.createElement('textarea');
+        area.value = text;
+        area.setAttribute('readonly', 'readonly');
+        area.style.position = 'absolute';
+        area.style.left = '-9999px';
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand('copy');
+        document.body.removeChild(area);
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  function update(){
+    var plan = getPlan();
+    syncAddonAvailability(plan);
+    updateSummary(currentBreakdown());
+  }
+
+  var allInfoBtns = Array.prototype.slice.call(document.querySelectorAll('.step-info-btn'));
+  function closeAllTooltips(except){
+    allInfoBtns.forEach(function(b){
+      if(b === except) return;
+      var p = document.getElementById(b.getAttribute('data-info'));
+      if(p){ p.classList.remove('open'); }
+      b.classList.remove('open');
+      b.setAttribute('aria-expanded', 'false');
+    });
+  }
+  allInfoBtns.forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var panelId = btn.getAttribute('data-info');
+      var panel = document.getElementById(panelId);
+      if(!panel) return;
+      var opening = !panel.classList.contains('open');
+      closeAllTooltips(opening ? btn : null);
+      panel.classList.toggle('open', opening);
+      btn.classList.toggle('open', opening);
+      btn.setAttribute('aria-expanded', opening ? 'true' : 'false');
+    });
+  });
+  document.addEventListener('click', function(){ closeAllTooltips(null); });
+
+  refs.planTypeButtons.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      state.planType = btn.getAttribute('data-plan-type');
+      refs.planTypeButtons.forEach(function(b){
+        b.classList.toggle('active', b.getAttribute('data-plan-type') === state.planType);
+      });
+      var isFamily = state.planType === 'family';
+      refs.familyMembersRow.style.display = isFamily ? '' : 'none';
+      if(!isFamily){ refs.childrenCount.value = 1; }
+      update();
+    });
+  });
+
+  refs.planButtons.forEach(function(button){
+    button.addEventListener('click', function(){
+      setPlan(button.getAttribute('data-plan'));
+      update();
+    });
+  });
+
+  [refs.outpatientToggle, refs.dentalToggle, refs.opticalToggle].forEach(function(toggle){
+    toggle.addEventListener('change', update);
+  });
+
+  Array.prototype.slice.call(document.querySelectorAll('[data-step-target]')).forEach(function(button){
+    button.addEventListener('click', function(){
+      var target = button.getAttribute('data-step-target') === 'dependents' ? refs.dependentsCount : refs.childrenCount;
+      var min = target === refs.childrenCount ? 1 : 0;
+      var next = clampCount(target, min) + parseInt(button.getAttribute('data-step-delta'), 10);
+      target.value = next < min ? min : next;
+      update();
+    });
+  });
+
+  [refs.childrenCount, refs.dependentsCount].forEach(function(input){
+    input.addEventListener('input', update);
+    input.addEventListener('change', update);
+  });
+
+  if(refs.openPlanDetailsModal){
+    refs.openPlanDetailsModal.addEventListener('click', function(){
+      openCalcModal(refs.planDetailsModal);
+    });
+  }
+
+  if(refs.closePlanDetailsModal){
+    refs.closePlanDetailsModal.addEventListener('click', function(){
+      closeCalcModal(refs.planDetailsModal);
+    });
+  }
+
+  refs.openBreakdownModal.addEventListener('click', function(){
+    openCalcModal(refs.premiumBreakdownModal);
+  });
+
+  refs.closeBreakdownModal.addEventListener('click', function(){
+    closeCalcModal(refs.premiumBreakdownModal);
+  });
+
+  [refs.premiumBreakdownModal, refs.planDetailsModal].forEach(function(modal){
+    if(!modal){ return; }
+    modal.addEventListener('click', function(event){
+      if(event.target === modal){
+        closeCalcModal(modal);
+      }
+    });
+  });
+
+  document.addEventListener('keydown', function(event){
+    if(event.key !== 'Escape'){ return; }
+    [refs.premiumBreakdownModal, refs.planDetailsModal].forEach(function(modal){
+      if(modal && modal.classList.contains('open')){
+        closeCalcModal(modal);
+      }
+    });
+  });
+
+  if(refs.jumpToInstallments){
+    refs.jumpToInstallments.addEventListener('click', function(){
+      var section = document.getElementById('installments');
+      if(!section){ return; }
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  refs.btnSave.addEventListener('click', function(){
+    try {
+      var quote = getQuoteData();
+      localStorage.setItem('jubilee-j-junior-latest-quote', JSON.stringify(quote));
+      toast('Quote saved in this browser.');
+    } catch (error) {
+      toast('Unable to save quote in this browser.');
+    }
+  });
+
+  refs.btnDownload.addEventListener('click', function(){
+    var quote = getQuoteData();
+    var fileName = ['J-Junior-Quote', quote.planName, quote.generatedOn.replace(/[^0-9A-Za-z]+/g, '-')].join('-') + '.html';
+    downloadFile(fileName, buildHtml(quote), 'text/html;charset=utf-8');
+  });
+
+  refs.btnShare.addEventListener('click', function(){
+    var quote = getQuoteData();
+    var text = toText(quote);
+    if(navigator.share){
+      navigator.share({ title: 'Jubilee J-Junior Quote', text: text }).catch(function(){});
+      return;
+    }
+    copyText(text).then(function(){
+      toast('Quote copied to clipboard.');
+    }).catch(function(){
+      toast('Sharing is not supported here.');
+    });
+  });
+
+  renderPlanDetailsTable();
+  setPlan('classic');
+  update();
+})();
+
+// FAQ Accordion
+Array.prototype.slice.call(document.querySelectorAll('.faq-q')).forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var item = btn.parentElement;
+    var isOpen = item.classList.contains('open');
+    Array.prototype.slice.call(document.querySelectorAll('.faq-item.open')).forEach(function(el){
+      el.classList.remove('open');
+    });
+    if(!isOpen) item.classList.add('open');
+  });
+});
+
+// Mobile Nav Toggle
+var burger = document.getElementById('navBurger');
+var navLinks = document.getElementById('navLinks');
+if(burger && navLinks){
+  burger.addEventListener('click', function(){ navLinks.classList.toggle('nav-open'); });
+  Array.prototype.slice.call(document.querySelectorAll('.nav-links a')).forEach(function(a){
+    a.addEventListener('click', function(){ navLinks.classList.remove('nav-open'); });
+  });
+}
+
+// Smooth Scroll
+Array.prototype.slice.call(document.querySelectorAll('a[href^="#"]')).forEach(function(a){
+  a.addEventListener('click', function(e){
+    var href = a.getAttribute('href');
+    if(!href || href === '#') return;
+    var target = document.querySelector(href);
+    if(target){
+      e.preventDefault();
+      window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' });
+    }
+  });
+});
+
+
+// Keyboard paging: keep normal scrolling soft, but make Page Down/Page Up land on section starts.
+(function(){
+  function getSections(){
+    return Array.prototype.slice.call(document.querySelectorAll('body > section'));
+  }
+  function getNavHeight(){
+    var nav = document.querySelector('.nav');
+    return nav ? nav.offsetHeight : 72;
+  }
+  function isTypingTarget(el){
+    return !!(el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)));
+  }
+  function goToSection(section){
+    if(!section) return;
+    window.scrollTo({
+      top: Math.max(section.offsetTop - getNavHeight(), 0),
+      behavior: 'smooth'
+    });
+  }
+
+  document.addEventListener('keydown', function(e){
+    if(window.innerWidth < 1025) return;
+    if(e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+    if(e.key !== 'PageDown' && e.key !== 'PageUp') return;
+    if(isTypingTarget(document.activeElement)) return;
+
+    var sections = getSections();
+    if(!sections.length) return;
+
+    var currentTop = window.scrollY + getNavHeight() + 8;
+    e.preventDefault();
+
+    if(e.key === 'PageDown'){
+      var next = sections.find(function(section){
+        return section.offsetTop > currentTop;
+      });
+      if(next){
+        goToSection(next);
+      }
+      return;
+    }
+
+    var previous = sections.slice().reverse().find(function(section){
+      return section.offsetTop < window.scrollY - 8;
+    });
+    if(previous){
+      goToSection(previous);
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+})();
