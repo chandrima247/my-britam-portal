@@ -331,6 +331,37 @@
       flex-shrink: 0;
     }
     .btn-logout:hover { background: rgba(186,12,47,0.08); }
+    .header-action-btn {
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border-widget);
+      background: #fff;
+      color: var(--text-dark);
+      font-size: 12.5px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: background .18s, border-color .18s, color .18s;
+      white-space: nowrap;
+    }
+    .header-action-btn:hover {
+      background: #f8fafc;
+      border-color: #b7c6d7;
+    }
+    .header-action-btn.cta {
+      background: var(--red);
+      border-color: var(--red);
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(186,12,47,0.16);
+    }
+    .header-action-btn.cta:hover {
+      background: #a70b2a;
+      border-color: #a70b2a;
+    }
 
     /* ══════════════════════════════
        MAIN ROW  (policy col + white panel)
@@ -1027,6 +1058,14 @@
       margin-top: 5px;
       line-height: 1.45;
     }
+    .ipf-due-date {
+      display: block;
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-dark);
+      margin-top: 4px;
+      line-height: 1.25;
+    }
     .ipf-badge {
       display: inline-flex;
       align-items: center;
@@ -1046,6 +1085,44 @@
     .ipf-badge-open {
       color: #1d4ed8;
       background: #dbeafe;
+    }
+    .reco-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+      padding: 14px;
+      margin-top: 8px;
+    }
+    .reco-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10.5px;
+      font-weight: 800;
+      color: #047857;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 8px;
+    }
+    .reco-label::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #10b981;
+      flex-shrink: 0;
+    }
+    .reco-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-dark);
+      line-height: 1.25;
+      margin-bottom: 6px;
+    }
+    .reco-copy {
+      font-size: 12.5px;
+      line-height: 1.55;
+      color: var(--text-muted2);
     }
 
     /* Airtel / MTN mini logos */
@@ -1977,7 +2054,17 @@
         <span style="color:#e5e7eb">|</span>
         <h1>Account Dashboard</h1>
       </div>
-      <div style="display:flex;align-items:center;gap:8px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+        <button class="header-action-btn" onclick="openProfileSettings()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          Profile Settings
+        </button>
+        <button class="header-action-btn cta" onclick="exploreInsurance()">
+          Explore Insurance
+        </button>
         <!-- Notification Bell -->
         <div class="notif-wrap" id="notifWrap">
           <button class="notif-btn" onclick="toggleNotif()" title="Notifications">
@@ -2220,6 +2307,16 @@
 function logoutPortal() {
   localStorage.removeItem('britamPortalRole');
   window.location.href = 'index.html';
+}
+function openProfileSettings() {
+  activeWidgetFilter = 'overview';
+  renderWidgetFilters();
+  renderWidgets();
+  const whitePanel = document.querySelector('.white-panel');
+  if (whitePanel) whitePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function exploreInsurance() {
+  window.location.href = 'index.html#products';
 }
 // ══════════════════════════════════════════════════════════
 //  DATA  (Figma-matched)
@@ -4088,6 +4185,48 @@ function renderWidgets() {
   const paidSoFar = Math.max(totalPremiumValue - outstandingValue, 0);
   const nextInstallmentAmountText = `UGX ${nextInstallmentAmount.toLocaleString('en-US')}`;
   const paidSoFarText = `UGX ${paidSoFar.toLocaleString('en-US')}`;
+  const recommendationMap = {
+    'Motor Insurance': {
+      product: 'Personal Accident',
+      copy: 'Add accident cover for medical bills, disability support, and everyday peace of mind on the road.'
+    },
+    'Personal Accident': {
+      product: 'Motor Insurance',
+      copy: 'Pair your accident cover with motor protection for a stronger day-to-day safety net.'
+    },
+    'Fire Insurance': {
+      product: 'Theft Insurance',
+      copy: 'Protect your premises and stock against burglary and forced entry alongside fire cover.'
+    },
+    'Marine Insurance': {
+      product: 'Liability Insurance',
+      copy: 'Add third-party liability cover to protect your business when shipments involve clients or contractors.'
+    },
+    'Liability Insurance': {
+      product: 'Fire Insurance',
+      copy: 'Property cover can complement liability protection for your premises, stock, and operations.'
+    },
+    'Theft Insurance': {
+      product: 'Fire Insurance',
+      copy: 'Round out your premises protection with cover for fire, contents, and business interruption.'
+    },
+    'Engineering Insurance': {
+      product: 'Workers Compensation',
+      copy: 'Support site teams with injury-related cover alongside project and machinery protection.'
+    },
+    'Workers Compensation': {
+      product: 'Engineering Insurance',
+      copy: 'Project and plant cover can sit well alongside employee injury protection for active worksites.'
+    },
+    'Aviation Insurance': {
+      product: 'Liability Insurance',
+      copy: 'Broaden protection with third-party liability cover around operations, clients, and service partners.'
+    }
+  };
+  const recommendedCover = recommendationMap[p.product] || {
+    product: 'Travel Insurance',
+    copy: 'Explore another cover that complements your current policy and broadens day-to-day protection.'
+  };
 
   // ── Col 1: Policy Details + Get Statement + Benefit Balances
   const policyDetails = `
@@ -4309,6 +4448,23 @@ function renderWidgets() {
       <div class="wbody" style="padding-top:8px">${usageBody}</div>
     </div>`;
 
+  const recommendationWidget = `
+    <div class="wcard">
+      <div class="whead">
+        <div class="wtitle-group"><div class="wbar"></div><span class="wtitle">Recommended for you</span></div>
+      </div>
+      <div class="wbody">
+        <div class="reco-card">
+          <span class="reco-label">Suggested next cover</span>
+          <div class="reco-title">${recommendedCover.product}</div>
+          <p class="reco-copy">${recommendedCover.copy}</p>
+        </div>
+        <div class="widget-action-end">
+          <button class="btn-red" onclick="exploreInsurance()">Explore Insurance</button>
+        </div>
+      </div>
+    </div>`;
+
   // ── Col 3: IPF + Transaction History
   const ipfWidget = hasActiveIpf ? `
     <div class="wcard">
@@ -4321,9 +4477,9 @@ function renderWidgets() {
           <div>
             <span class="ipf-kicker">Instalments remaining</span>
             <span class="ipf-main">${installmentsRemaining}</span>
-            <span class="ipf-sub">Next instalment due on ${p.dueDate}</span>
+            <span class="ipf-sub">Next instalment due</span>
+            <span class="ipf-due-date">${p.dueDate}</span>
           </div>
-          <div class="ipf-badge ipf-badge-active">In progress</div>
         </div>
         <div class="widget-mini-grid">
           <div class="widget-mini-cell">
@@ -4434,7 +4590,7 @@ function renderWidgets() {
   const allColumns = [
     [policyDetails, docCentreWidget, endorsementWidget, renewalWidget, contactDetails],
     [claimsSummary, benefitBalances, usageHistory],
-    [ipfWidget, transactionHistory]
+    [ipfWidget, recommendationWidget, transactionHistory]
   ];
 
   const widgetCards = [
@@ -4446,6 +4602,7 @@ function renderWidgets() {
     { category: 'claims', html: usageHistory },
     { category: 'payments', html: ipfWidget },
     { category: 'overview', html: endorsementWidget },
+    { category: 'overview', html: recommendationWidget },
     { category: 'payments', html: renewalWidget },
     { category: 'payments', html: transactionHistory }
   ];
