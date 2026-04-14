@@ -1093,25 +1093,6 @@
       padding: 14px;
       margin-top: 8px;
     }
-    .reco-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 10.5px;
-      font-weight: 800;
-      color: #047857;
-      text-transform: uppercase;
-      letter-spacing: .04em;
-      margin-bottom: 8px;
-    }
-    .reco-label::before {
-      content: '';
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: #10b981;
-      flex-shrink: 0;
-    }
     .reco-title {
       font-size: 16px;
       font-weight: 800;
@@ -4455,7 +4436,6 @@ function renderWidgets() {
       </div>
       <div class="wbody">
         <div class="reco-card">
-          <span class="reco-label">Suggested next cover</span>
           <div class="reco-title">${recommendedCover.product}</div>
           <p class="reco-copy">${recommendedCover.copy}</p>
         </div>
@@ -4465,18 +4445,29 @@ function renderWidgets() {
       </div>
     </div>`;
 
-  // ── Col 3: IPF + Transaction History
-  const ipfWidget = hasActiveIpf ? `
+  // ── Col 3: Instalments + Transaction History
+  const effectiveInstallmentsRemaining = installmentsRemaining || 2;
+  const effectiveNextInstallmentAmount = hasActiveIpf
+    ? nextInstallmentAmountText
+    : `UGX ${Math.ceil(totalPremiumValue / effectiveInstallmentsRemaining).toLocaleString('en-US')}`;
+  const effectiveBalanceAmount = hasActiveIpf
+    ? outstandingAmount
+    : `UGX ${Math.ceil(totalPremiumValue * 0.6).toLocaleString('en-US')}`;
+  const effectivePaidAmount = hasActiveIpf
+    ? paidSoFarText
+    : `UGX ${Math.floor(totalPremiumValue * 0.4).toLocaleString('en-US')}`;
+
+  const ipfWidget = `
     <div class="wcard">
       <div class="whead">
-        <div class="wtitle-group"><div class="wbar"></div><span class="wtitle">IPF / Pay in Instalments</span></div>
+        <div class="wtitle-group"><div class="wbar"></div><span class="wtitle">Pay in Instalments</span></div>
         <span class="ipf-badge ipf-badge-active">Active plan</span>
       </div>
       <div class="wbody">
         <div class="ipf-summary">
           <div>
             <span class="ipf-kicker">Instalments remaining</span>
-            <span class="ipf-main">${installmentsRemaining}</span>
+            <span class="ipf-main">${effectiveInstallmentsRemaining}</span>
             <span class="ipf-sub">Next instalment due</span>
             <span class="ipf-due-date">${p.dueDate}</span>
           </div>
@@ -4484,15 +4475,15 @@ function renderWidgets() {
         <div class="widget-mini-grid">
           <div class="widget-mini-cell">
             <span class="widget-mini-label">Next instalment</span>
-            <span class="widget-mini-value">${nextInstallmentAmountText}</span>
+            <span class="widget-mini-value">${effectiveNextInstallmentAmount}</span>
           </div>
           <div class="widget-mini-cell">
             <span class="widget-mini-label">Balance remaining</span>
-            <span class="widget-mini-value">${outstandingAmount}</span>
+            <span class="widget-mini-value">${effectiveBalanceAmount}</span>
           </div>
           <div class="widget-mini-cell">
             <span class="widget-mini-label">Paid so far</span>
-            <span class="widget-mini-value">${paidSoFarText}</span>
+            <span class="widget-mini-value">${effectivePaidAmount}</span>
           </div>
           <div class="widget-mini-cell">
             <span class="widget-mini-label">Payment account</span>
@@ -4500,44 +4491,7 @@ function renderWidgets() {
           </div>
         </div>
         <div class="widget-action-end">
-          <button class="btn-red">Continue Plan</button>
-        </div>
-      </div>
-    </div>` : `
-    <div class="wcard">
-      <div class="whead">
-        <div class="wtitle-group"><div class="wbar"></div><span class="wtitle">IPF / Pay in Instalments</span></div>
-        <span class="ipf-badge ipf-badge-open">Available</span>
-      </div>
-      <div class="wbody">
-        <div class="ipf-summary">
-          <div>
-            <span class="ipf-kicker">Spread your premium</span>
-            <span class="ipf-main">Pay in instalments</span>
-            <span class="ipf-sub">Set up an instalment plan instead of paying the full premium at once.</span>
-          </div>
-          <div class="ipf-badge ipf-badge-open">Open</div>
-        </div>
-        <div class="widget-mini-grid">
-          <div class="widget-mini-cell">
-            <span class="widget-mini-label">Suggested deposit</span>
-            <span class="widget-mini-value">UGX ${Math.ceil(totalPremiumValue * 0.4).toLocaleString('en-US')}</span>
-          </div>
-          <div class="widget-mini-cell">
-            <span class="widget-mini-label">Remaining instalments</span>
-            <span class="widget-mini-value">2 monthly payments</span>
-          </div>
-          <div class="widget-mini-cell">
-            <span class="widget-mini-label">Full premium</span>
-            <span class="widget-mini-value">UGX ${p.premium}</span>
-          </div>
-          <div class="widget-mini-cell">
-            <span class="widget-mini-label">Payment account</span>
-            <span class="widget-mini-value"><span class="md-acct">${m.account} ${acctBadge(m.acctType)}</span></span>
-          </div>
-        </div>
-        <div class="widget-action-end">
-          <button class="btn-red">Apply for IPF</button>
+          <button class="btn-red">Pay Now</button>
         </div>
       </div>
     </div>`;
