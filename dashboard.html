@@ -331,36 +331,24 @@
       flex-shrink: 0;
     }
     .btn-logout:hover { background: rgba(186,12,47,0.08); }
-    .header-action-btn {
-      height: 36px;
-      padding: 0 14px;
-      border-radius: 10px;
-      border: 1.5px solid var(--border-widget);
+    .header-icon-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border-txn);
       background: #fff;
-      color: var(--text-dark);
-      font-size: 12.5px;
-      font-weight: 700;
+      color: var(--text-muted);
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
       cursor: pointer;
       transition: background .18s, border-color .18s, color .18s;
-      white-space: nowrap;
+      flex-shrink: 0;
     }
-    .header-action-btn:hover {
+    .header-icon-btn:hover {
       background: #f8fafc;
-      border-color: #b7c6d7;
-    }
-    .header-action-btn.cta {
-      background: var(--red);
-      border-color: var(--red);
-      color: #fff;
-      box-shadow: 0 10px 24px rgba(186,12,47,0.16);
-    }
-    .header-action-btn.cta:hover {
-      background: #a70b2a;
-      border-color: #a70b2a;
+      border-color: var(--border-widget);
+      color: var(--text-dark);
     }
 
     /* ══════════════════════════════
@@ -488,11 +476,40 @@
       border-radius: 6px;
       padding: 20px 24px 24px;
     }
+    .widget-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
     .widget-filterbar {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-bottom: 16px;
+      flex: 1;
+    }
+    .panel-cta {
+      height: 36px;
+      padding: 0 16px;
+      border-radius: 10px;
+      border: 1px solid var(--red);
+      background: var(--red);
+      color: #fff;
+      font-size: 12.5px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: background .18s, border-color .18s;
+      white-space: nowrap;
+      box-shadow: 0 10px 24px rgba(186,12,47,0.14);
+    }
+    .panel-cta:hover {
+      background: #a70b2a;
+      border-color: #a70b2a;
     }
     .widget-filter {
       display: inline-flex;
@@ -2035,17 +2052,7 @@
         <span style="color:#e5e7eb">|</span>
         <h1>Account Dashboard</h1>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
-        <button class="header-action-btn" onclick="openProfileSettings()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
-          Profile Settings
-        </button>
-        <button class="header-action-btn cta" onclick="exploreInsurance()">
-          Explore Insurance
-        </button>
+      <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
         <!-- Notification Bell -->
         <div class="notif-wrap" id="notifWrap">
           <button class="notif-btn" onclick="toggleNotif()" title="Notifications">
@@ -2062,6 +2069,12 @@
             <div class="notif-list" id="notifList"></div>
           </div>
         </div>
+        <button class="header-icon-btn" onclick="openProfileSettings()" title="Profile settings" aria-label="Profile settings">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </button>
         <!-- Logout -->
         <button class="btn-logout" onclick="logoutPortal()" title="Logout">
           <svg width="20" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2104,7 +2117,10 @@
 
       <!-- ── RIGHT: WHITE PANEL ── -->
       <div class="white-panel">
-        <div class="widget-filterbar" id="widgetFilterBar"></div>
+        <div class="widget-topbar">
+          <div class="widget-filterbar" id="widgetFilterBar"></div>
+          <button class="panel-cta" onclick="exploreInsurance()">Explore Insurance</button>
+        </div>
         <div class="widget-cols" id="widgetArea"></div>
       </div>
 

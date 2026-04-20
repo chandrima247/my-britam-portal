@@ -260,7 +260,54 @@
     .btn-logout:hover { background:rgba(186,12,47,.08); }
 
     /* ── WHITE PANEL ── */
-    .panel { background:#fff; border-radius:8px; padding:18px 20px 24px; margin-bottom:26px; }
+    .panel { background:#fff; border-radius:12px; padding:18px 20px 24px; margin-bottom:26px; border:1px solid var(--border); }
+    .panel.panel-hidden { display:none; }
+    .workspace-switcher {
+      display:flex;
+      gap:8px;
+      margin:18px 0 -1px;
+      flex-wrap:wrap;
+      position:relative;
+      z-index:2;
+    }
+    .workspace-tab {
+      min-width:220px;
+      border:1px solid #d7e0ea;
+      border-bottom:none;
+      border-radius:14px 14px 0 0;
+      background:#eef3f7;
+      padding:11px 15px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      transition:background .18s ease, border-color .18s ease;
+      position:relative;
+    }
+    .workspace-tab:hover {
+      border-color:#cbd5e1;
+      background:#f8fafc;
+    }
+    .workspace-tab.is-active {
+      border-color:var(--border);
+      background:#fff;
+      box-shadow:0 -1px 0 rgba(255,255,255,1) inset;
+    }
+    .workspace-tab.is-active::after {
+      content:'';
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:-1px;
+      height:2px;
+      background:#fff;
+    }
+    .workspace-tab-title {
+      font-size:13px;
+      font-weight:800;
+      color:var(--dark);
+      line-height:1.2;
+    }
     .section-head {
       display:flex;
       align-items:flex-start;
@@ -705,6 +752,12 @@
       align-items:center;
       gap:8px;
     }
+    .ops-menu-bottom {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
     .client-policy-tag {
       font-size:10px;
       font-weight:800;
@@ -881,6 +934,32 @@
       border-bottom:1px solid #eef2f7;
     }
     .summary-row:last-child { border-bottom:none; }
+    .summary-row-btn {
+      width:100%;
+      border:none;
+      background:none;
+      text-align:left;
+      cursor:pointer;
+      transition:background .18s ease;
+    }
+    .summary-row-btn:hover {
+      background:#f8fafc;
+    }
+    .summary-row-btn .summary-value {
+      color:#0b79d0;
+    }
+    .summary-row-action {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:12.5px;
+      font-weight:700;
+      color:#0b79d0;
+      white-space:nowrap;
+    }
+    .summary-row-action svg {
+      flex-shrink:0;
+    }
     .summary-label {
       font-size:11px;
       color:var(--muted);
@@ -1375,6 +1454,7 @@
     </div>
 
     <div class="agent-kpi-bar" id="agentKpiBar"></div>
+    <div class="workspace-switcher" id="agentWorkspaceNav"></div>
     <div class="panel" id="opsArea"></div>
     <div class="panel" id="clientWorkspaceArea"></div>
   </div>
@@ -1830,6 +1910,164 @@ let ipfDraft = null;
 // ════════════════════════════════
 let activeClient = 'ALL';
 let activeClientPolicyId = null;
+let activeAgentWorkspace = 'client';
+let activeOpsSection = 'commissions';
+const AGENT_WORK_DATE = new Date('2026-04-01T00:00:00');
+
+function renderAgentWorkspaceNav() {
+  const nav = document.getElementById('agentWorkspaceNav');
+  if (!nav) return;
+  nav.innerHTML = `
+    <button class="workspace-tab ${activeAgentWorkspace === 'client' ? 'is-active' : ''}" onclick="setAgentWorkspaceView('client')">
+      <span class="workspace-tab-title">Client View</span>
+    </button>
+    <button class="workspace-tab ${activeAgentWorkspace === 'ops' ? 'is-active' : ''}" onclick="setAgentWorkspaceView('ops')">
+      <span class="workspace-tab-title">My Dashboard</span>
+    </button>
+  `;
+}
+
+function syncAgentWorkspacePanels() {
+  const opsArea = document.getElementById('opsArea');
+  const clientArea = document.getElementById('clientWorkspaceArea');
+  if (opsArea) opsArea.classList.toggle('panel-hidden', activeAgentWorkspace !== 'ops');
+  if (clientArea) clientArea.classList.toggle('panel-hidden', activeAgentWorkspace !== 'client');
+}
+
+function setAgentWorkspaceView(view) {
+  activeAgentWorkspace = view;
+  renderAgentWorkspaceNav();
+  syncAgentWorkspacePanels();
+}
+
+function setActiveOpsSection(section) {
+  activeOpsSection = section;
+  pg.orisk = 0;
+  pg.otask = 0;
+  pg.opay = 0;
+  renderAgentWorkspaceV2();
+}
+
+function parseUGX(value) {
+  return Number(String(value || '').replace(/[^\d]/g, '')) || 0;
+}
+
+function formatUGX(value) {
+  return `UGX ${Number(value || 0).toLocaleString('en-US')}`;
+}
+
+function parseAgentDate(value) {
+  const date = new Date(`${value} 00:00:00`);
+  return Number.isNaN(date.getTime()) ? AGENT_WORK_DATE : date;
+}
+
+function daysFromAgentDate(value) {
+  return Math.round((parseAgentDate(value) - AGENT_WORK_DATE) / 86400000);
+}
+
+function getOpsRenewalItems() {
+  const pendingPayments = new Set(
+    A.payments.filter(item => item.status !== 'Successful').map(item => item.policy)
+  );
+
+  return A.policies
+    .map(policy => {
+      const days = daysFromAgentDate(policy.due);
+      return {
+        ...policy,
+        days,
+        hasPendingPayment: pendingPayments.has(policy.id),
+        overdue: days < 0,
+        band: days < 0 ? 'Overdue' : days <= 7 ? 'Next 7 days' : days <= 30 ? 'Next 30 days' : 'Next 60 days',
+        riskStatus: days < 0 || pendingPayments.has(policy.id) ? 'Pending' : policy.status === 'RENEWAL' ? 'RENEWAL' : 'ACTIVE'
+      };
+    })
+    .filter(item => item.status === 'RENEWAL' || item.hasPendingPayment || item.days <= 60)
+    .sort((a, b) => a.days - b.days);
+}
+
+function getOpsRenewalStats() {
+  const items = getOpsRenewalItems();
+  return {
+    items,
+    next7: items.filter(item => item.days >= 0 && item.days <= 7).length,
+    next30: items.filter(item => item.days > 7 && item.days <= 30).length,
+    next60: items.filter(item => item.days > 30 && item.days <= 60).length,
+    unpaid: items.filter(item => item.hasPendingPayment).length,
+    atRisk: items.filter(item => item.overdue || item.hasPendingPayment || item.status === 'RENEWAL').length
+  };
+}
+
+function getOpsPaymentItems() {
+  return A.payments
+    .filter(item => item.status !== 'Successful')
+    .map(item => {
+      const policy = A.policies.find(policyItem => policyItem.id === item.policy);
+      const ipf = ipfState[item.policy];
+      return {
+        ...item,
+        due: policy?.due || '-',
+        phase: ipf && (ipf.status === 'ACTIVE' || ipf.status === 'PENDING') ? 'Installment plan' : 'Premium follow-up'
+      };
+    });
+}
+
+function getOpsPaymentStats() {
+  const items = getOpsPaymentItems();
+  return {
+    items,
+    outstanding: formatUGX(items.reduce((sum, item) => sum + parseUGX(item.amount), 0)),
+    unpaidCount: items.length,
+    activePlans: Object.values(ipfState).filter(item => item && (item.status === 'ACTIVE' || item.status === 'PENDING')).length,
+    failedCount: items.filter(item => item.status === 'Failed').length
+  };
+}
+
+function getOpsActionItems() {
+  const renewalStats = getOpsRenewalStats();
+  const paymentStats = getOpsPaymentStats();
+  const openClaims = A.claims.filter(item => item.status !== 'Settled');
+  const pendingEfris = A.efris.filter(item => /Pending/i.test(item.status));
+  const topRenewals = renewalStats.items.slice(0, 2).map(item => item.policy).join(' / ') || 'Renewal review';
+
+  return [
+    {
+      title: 'Renewals need review',
+      meta: `${renewalStats.atRisk} policies need follow-up soon.`,
+      detail: `${renewalStats.unpaid} still have premium pending.`,
+      value: `${renewalStats.atRisk} open`,
+      status: 'RENEWAL'
+    },
+    {
+      title: 'Claims need updates',
+      meta: `${openClaims.length} claims are still open.`,
+      detail: openClaims.slice(0, 2).map(item => item.client).join(' / ') || 'Claims desk follow-up pending.',
+      value: `${openClaims.length} open`,
+      status: 'Under Review'
+    },
+    {
+      title: 'Premium collection',
+      meta: `${paymentStats.unpaidCount} policies are still unpaid.`,
+      detail: `Outstanding ${paymentStats.outstanding}.`,
+      value: paymentStats.outstanding,
+      status: 'Pending'
+    },
+    {
+      title: 'eFRIS filing review',
+      meta: `${pendingEfris.length} submission is awaiting review.`,
+      detail: pendingEfris[0] ? `Latest filing ${pendingEfris[0].id}.` : 'No filing is pending right now.',
+      value: `${pendingEfris.length} pending`,
+      status: 'Pending Finance Review'
+    },
+    {
+      title: 'Policies nearing expiry',
+      meta: `${renewalStats.next7 + renewalStats.next30} renewals are coming up next.`,
+      detail: topRenewals,
+      value: `${renewalStats.next7} this week`,
+      status: 'Pending'
+    }
+  ];
+}
 
 function getAgentClients() {
   return [...new Set(A.policies.map(p => p.client))].sort((a, b) => a.localeCompare(b));
@@ -2092,6 +2330,19 @@ function renderSummaryList(rows) {
     </div>`).join('')}</div>`;
 }
 
+function renderClickableSummaryList(rows) {
+  return `<div class="summary-list">${rows.map(([label, value, onclick]) => `
+    <button type="button" class="summary-row summary-row-btn" onclick="${onclick}">
+      <span class="summary-label">${label}</span>
+      <span class="summary-row-action">
+        <span class="summary-value">${value}</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </span>
+    </button>`).join('')}</div>`;
+}
+
 function renderChipRow(items) {
   return items && items.length
     ? `<div class="widget-chip-row">${items.map(item => `<span class="widget-chip">${item}</span>`).join('')}</div>`
@@ -2344,14 +2595,21 @@ function selectAgentPolicy(policyId) {
   renderAgentWorkspaceV2();
 }
 
-const PS = { pol:7, cpol:4, cl:4, pm:4, sch:3, ef:3 };
-const pg = { pol:0, cpol:0, cl:0, pm:0, sch:0, ef:0 };
+const PS = { pol:7, cpol:4, cl:4, pm:4, sch:3, ef:3, orisk:3, otask:3, opay:3 };
+const pg = { pol:0, cpol:0, cl:0, pm:0, sch:0, ef:0, orisk:0, otask:0, opay:0 };
 function pgd(arr, k) {
   const sz=PS[k], p=pg[k], n=arr.length, s=p*sz, e=Math.min(s+sz,n);
   return { items:arr.slice(s,e), s:s+1, e, n, prev:p>0, next:e<n };
 }
 function cpg(k, d) {
-  const arr = k === 'sch' ? A.schedules : k === 'ef' ? A.efris : k === 'cpol' ? getClientPolicyItems() : getWorkspaceItems(k);
+  const arr =
+    k === 'sch' ? A.schedules :
+    k === 'ef' ? A.efris :
+    k === 'orisk' ? getOpsRenewalItems() :
+    k === 'otask' ? getOpsActionItems() :
+    k === 'opay' ? getOpsPaymentItems() :
+    k === 'cpol' ? getClientPolicyItems() :
+    getWorkspaceItems(k);
   pg[k] = Math.max(0, Math.min(pg[k]+d, Math.ceil(arr.length/PS[k])-1));
   renderAgentWorkspaceV2();
 }
@@ -2450,6 +2708,177 @@ function openScheduleModal(period) {
       ${mfFull('Commission Earned', s.commission)}
     </div>`;
   document.getElementById('detailModal').classList.add('open');
+}
+function openOpsRenewalsModal() {
+  const stats = getOpsRenewalStats();
+  setModalContent('Renewals & Lapse Risk', `
+    <div class="mcopy">Policies that need renewal follow-up are grouped here.</div>
+    <div class="mgrid">
+      ${mf('Next 7 days', `${stats.next7} policies`)}
+      ${mf('Next 30 days', `${stats.next30} policies`)}
+      ${mf('Next 60 days', `${stats.next60} policies`)}
+      ${mf('Unpaid premium', `${stats.unpaid} policies`)}
+      ${mf('At risk', `${stats.atRisk} policies`)}
+      ${mfFull('Current view', 'Renewal attention queue')}
+    </div>
+    <div class="msect">Policies To Review</div>
+    ${renderModalList(stats.items.map(item => [
+      `${item.policy} — ${item.product}`,
+      `${item.client} • Due ${item.due} • ${item.premium}`
+    ]))}
+  `);
+}
+function openOpsActionsModal() {
+  const items = getOpsActionItems();
+  setModalContent('Action Queue', `
+    <div class="mcopy">These are the follow-ups that need attention across your book.</div>
+    ${renderModalList(items.map(item => [
+      `${item.title} — ${item.value}`,
+      `${item.meta} ${item.detail}`
+    ]))}
+  `);
+}
+function openOpsPaymentsModal() {
+  const stats = getOpsPaymentStats();
+  setModalContent('Payments & Outstanding Premiums', `
+    <div class="mcopy">Outstanding premiums and installment activity are summarized here.</div>
+    <div class="mgrid">
+      ${mf('Outstanding premium', stats.outstanding)}
+      ${mf('Unpaid policies', `${stats.unpaidCount}`)}
+      ${mf('Installment plans', `${stats.activePlans}`)}
+      ${mfFull('Failed payments', `${stats.failedCount}`)}
+    </div>
+    <div class="msect">Pending Payments</div>
+    ${renderModalList(stats.items.map(item => [
+      `${item.client} — ${item.amount}`,
+      `${item.policy} • ${item.product} • ${item.phase}`
+    ]))}
+  `);
+}
+function openOpsPaymentsBreakdown(type) {
+  const stats = getOpsPaymentStats();
+  const items =
+    type === 'installments' ? stats.items.filter(item => item.phase === 'Installment plan') :
+    type === 'failed' ? stats.items.filter(item => item.status === 'Failed') :
+    stats.items;
+
+  const titles = {
+    outstanding: 'Outstanding Premium',
+    unpaid: 'Unpaid Policies',
+    installments: 'Installment Plans',
+    failed: 'Failed Payments'
+  };
+
+  const summaries = {
+    outstanding: stats.outstanding,
+    unpaid: `${stats.unpaidCount} policies`,
+    installments: `${stats.activePlans} plans`,
+    failed: `${stats.failedCount} payments`
+  };
+
+  setModalContent(titles[type] || 'Payments', `
+    <div class="mcopy">${summaries[type] || ''}</div>
+    ${items.length ? renderModalList(items.map(item => [
+      `${item.client} — ${item.amount}`,
+      `${item.policy} • ${item.product} • ${item.phase}${item.due ? ` • Due ${item.due}` : ''}`
+    ])) : `<div class="no-data">Nothing to show here right now.</div>`}
+  `);
+}
+function openOpsRenewalsBreakdown(type) {
+  const stats = getOpsRenewalStats();
+  const items =
+    type === 'next7' ? stats.items.filter(item => item.days >= 0 && item.days <= 7) :
+    type === 'next30' ? stats.items.filter(item => item.days > 7 && item.days <= 30) :
+    type === 'next60' ? stats.items.filter(item => item.days > 30 && item.days <= 60) :
+    type === 'unpaid' ? stats.items.filter(item => item.hasPendingPayment) :
+    type === 'atrisk' ? stats.items.filter(item => item.overdue || item.hasPendingPayment || item.status === 'RENEWAL') :
+    stats.items;
+
+  const titles = {
+    next7: 'Renewals In Next 7 Days',
+    next30: 'Renewals In Next 30 Days',
+    next60: 'Renewals In Next 60 Days',
+    unpaid: 'Renewals With Premium Pending',
+    atrisk: 'At-Risk Renewals'
+  };
+
+  setModalContent(titles[type] || 'Renewals & Lapse Risk', `
+    <div class="mcopy">${items.length} polic${items.length === 1 ? 'y' : 'ies'} in this view.</div>
+    ${items.length ? renderModalList(items.map(item => [
+      `${item.client} — ${item.premium}`,
+      `${item.policy} • ${item.product} • Due ${item.due}`
+    ])) : `<div class="no-data">Nothing to show here right now.</div>`}
+  `);
+}
+function openOpsActionBreakdown(type) {
+  const openClaims = A.claims.filter(item => item.status !== 'Settled');
+  const renewalItems = getOpsRenewalStats().items.filter(item => item.overdue || item.hasPendingPayment || item.status === 'RENEWAL');
+  const pendingEfris = A.efris.filter(item => /Pending/i.test(item.status));
+  const paymentItems = getOpsPaymentItems();
+
+  const data =
+    type === 'claims' ? openClaims.map(item => [`${item.client} — ${item.amount}`, `${item.id} • ${item.product} • ${item.status}`]) :
+    type === 'renewals' ? renewalItems.map(item => [`${item.client} — ${item.premium}`, `${item.policy} • ${item.product} • Due ${item.due}`]) :
+    type === 'efris' ? pendingEfris.map(item => [`${item.id} — ${item.amount}`, `${item.period} • ${item.status}`]) :
+    type === 'attention' ? [
+      [`Renewals needing follow-up — ${renewalItems.length}`, `${renewalItems.length} policy records need review.`],
+      [`Open claims — ${openClaims.length}`, `${openClaims.length} claims need follow-up.`],
+      [`Premium collection — ${paymentItems.length}`, `${paymentItems.length} policies still have premium pending.`],
+      [`eFRIS review — ${pendingEfris.length}`, `${pendingEfris.length} filing is still pending.`]
+    ] :
+    [];
+
+  const titles = {
+    attention: 'Items Needing Attention',
+    claims: 'Open Claims',
+    renewals: 'Renewal Follow-Up',
+    efris: 'eFRIS Review'
+  };
+
+  setModalContent(titles[type] || 'Action Queue', `
+    ${data.length ? renderModalList(data) : `<div class="no-data">Nothing to show here right now.</div>`}
+  `);
+}
+function openOpsCommissionBreakdown(type) {
+  const periods =
+    type === 'pending' ? A.schedules.filter(item => item.status !== 'Paid') :
+    type === 'paid' ? A.schedules.filter(item => item.status === 'Paid') :
+    A.schedules;
+
+  const titles = {
+    current: 'Commission This Month',
+    pending: 'Pending Payouts',
+    paid: 'Paid Periods',
+    periods: 'Commission Periods'
+  };
+
+  setModalContent(titles[type] || 'Commission Schedule', `
+    ${periods.length ? renderModalList(periods.map(item => [
+      `${item.period} — ${item.commission}`,
+      `${item.policies} policies • Gross ${item.gross} • ${item.status}`
+    ])) : `<div class="no-data">Nothing to show here right now.</div>`}
+  `);
+}
+function openOpsEfrisBreakdown(type) {
+  const items =
+    type === 'pending' ? A.efris.filter(item => /Pending/i.test(item.status)) :
+    type === 'processed' ? A.efris.filter(item => /Processed/i.test(item.status)) :
+    type === 'latest' ? (A.efris[0] ? [A.efris[0]] : []) :
+    A.efris;
+
+  const titles = {
+    pending: 'eFRIS Pending Review',
+    processed: 'eFRIS Processed',
+    total: 'All eFRIS Filings',
+    latest: 'Latest eFRIS Filing'
+  };
+
+  setModalContent(titles[type] || 'eFRIS History', `
+    ${items.length ? renderModalList(items.map(item => [
+      `${item.id} — ${item.amount}`,
+      `${item.period} • ${item.date} • ${item.status}`
+    ])) : `<div class="no-data">Nothing to show here right now.</div>`}
+  `);
 }
 function closeModal() {
   document.getElementById('detailModal').classList.remove('open');
@@ -2650,6 +3079,9 @@ function render() {
     el.textContent = this.files[0] ? this.files[0].name : 'No file selected';
     el.style.color = this.files[0] ? '#059668' : 'var(--muted)';
   });
+
+  renderAgentWorkspaceNav();
+  syncAgentWorkspacePanels();
 }
 
 // ════════════════════════════════
@@ -2917,6 +3349,223 @@ function renderAgentWorkspace() {
   const ef = pgd(A.efris,'ef');
   const primaryPolicy = getPrimaryPolicy(snapshot);
   const benefitModel = getClientBenefitModel(snapshot, primaryPolicy);
+  const renewalStats = getOpsRenewalStats();
+  const renewalPage = pgd(renewalStats.items, 'orisk');
+  const paymentStats = getOpsPaymentStats();
+  const paymentPage = pgd(paymentStats.items, 'opay');
+  const actionItems = getOpsActionItems();
+  const actionPage = pgd(actionItems, 'otask');
+
+  const commissionScheduleWidget = `
+      <div class="wcard">
+        <div class="whead">
+          <div class="wttl"><div class="wbar"></div><span class="wtitle">Commission Schedule</span></div>
+          <span class="wcount">${A.schedules.length} periods</span>
+          <button class="btn-dl" onclick="downloadSchedule()">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download
+          </button>
+        </div>
+        <div class="wbody">
+          <div class="widget-stack">
+            <p class="widget-kicker">Your commission snapshot is grouped by current earnings, pending payout, and payout history.</p>
+            ${renderClickableSummaryList([
+              ['This month', A.kpi.commission, `openOpsCommissionBreakdown('current')`],
+              ['Pending payout', A.kpi.pending, `openOpsCommissionBreakdown('pending')`],
+              ['Paid periods', `${A.schedules.filter(item => item.status === 'Paid').length} periods`, `openOpsCommissionBreakdown('paid')`],
+              ['All periods', `${A.schedules.length} periods`, `openOpsCommissionBreakdown('periods')`]
+            ])}
+          </div>
+        </div>
+      </div>`;
+
+  const renewalRiskWidget = `
+      <div class="wcard">
+        <div class="whead">
+          <div class="wttl"><div class="wbar"></div><span class="wtitle">Renewals & Lapse Risk</span></div>
+          <span class="wcount">${renewalStats.atRisk} at risk</span>
+        </div>
+        <div class="wbody">
+          <div class="widget-stack">
+            <p class="widget-kicker">Policies that need renewal attention are surfaced here first.</p>
+            ${renderClickableSummaryList([
+              ['Next 7 days', `${renewalStats.next7} policies`, `openOpsRenewalsBreakdown('next7')`],
+              ['Next 30 days', `${renewalStats.next30} policies`, `openOpsRenewalsBreakdown('next30')`],
+              ['Next 60 days', `${renewalStats.next60} policies`, `openOpsRenewalsBreakdown('next60')`],
+              ['Unpaid premium', `${renewalStats.unpaid} policies`, `openOpsRenewalsBreakdown('unpaid')`],
+              ['At risk', `${renewalStats.atRisk} policies`, `openOpsRenewalsBreakdown('atrisk')`]
+            ])}
+          </div>
+          ${renewalStats.items.length ? '' : `<div class="no-data">No renewals need attention right now.</div>`}
+        </div>
+      </div>`;
+
+  const actionQueueWidget = `
+      <div class="wcard">
+        <div class="whead">
+          <div class="wttl"><div class="wbar"></div><span class="wtitle">Action Queue</span></div>
+          <span class="wcount">${actionItems.length} items</span>
+        </div>
+        <div class="wbody">
+          <div class="widget-stack">
+            <p class="widget-kicker">The most urgent follow-ups are grouped so nothing slips out of sight.</p>
+            ${renderClickableSummaryList([
+              ['Need attention', `${actionItems.length} items`, `openOpsActionBreakdown('attention')`],
+              ['Open claims', `${A.claims.filter(item => item.status !== 'Settled').length} claims`, `openOpsActionBreakdown('claims')`],
+              ['Renewal follow-up', `${renewalStats.atRisk} policies`, `openOpsActionBreakdown('renewals')`],
+              ['eFRIS review', `${A.efris.filter(item => /Pending/i.test(item.status)).length} filing`, `openOpsActionBreakdown('efris')`]
+            ])}
+          </div>
+          ${actionItems.length ? '' : `<div class="no-data">Nothing needs follow-up right now.</div>`}
+        </div>
+      </div>`;
+
+  const outstandingPaymentsWidget = `
+      <div class="wcard">
+        <div class="whead">
+          <div class="wttl"><div class="wbar"></div><span class="wtitle">Payments & Outstanding Premiums</span></div>
+          <span class="wcount">${paymentStats.unpaidCount} unpaid</span>
+        </div>
+        <div class="wbody">
+          <div class="widget-stack">
+            <p class="widget-kicker">Outstanding collections and installment activity are kept in one place.</p>
+            ${renderClickableSummaryList([
+              ['Outstanding premium', paymentStats.outstanding, `openOpsPaymentsBreakdown('outstanding')`],
+              ['Unpaid policies', `${paymentStats.unpaidCount}`, `openOpsPaymentsBreakdown('unpaid')`],
+              ['Installment plans', `${paymentStats.activePlans}`, `openOpsPaymentsBreakdown('installments')`],
+              ['Failed payments', `${paymentStats.failedCount}`, `openOpsPaymentsBreakdown('failed')`]
+            ])}
+          </div>
+          ${paymentStats.unpaidCount ? '' : `<div class="no-data">No unpaid premiums are pending right now.</div>`}
+        </div>
+      </div>`;
+
+  const efrisUploadWidget = `
+      <div class="wcard">
+        <div class="whead">
+          <div class="wttl"><div class="wbar"></div><span class="wtitle">eFRIS Invoice Upload</span></div>
+        </div>
+        <div class="wbody">
+          <div class="fpick">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span class="fpick-name" id="efFileName">No file selected</span>
+            <button class="btn-sm bs-out" onclick="document.getElementById('efFile').click()">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Choose File
+            </button>
+          </div>
+          <input type="file" id="efFile" accept=".pdf" style="display:none" />
+          <div class="efform">
+            <div><label class="eflbl">Invoice No.</label><input class="efin" type="text" id="efNum" placeholder="EFR-0092" /></div>
+            <div><label class="eflbl">Amount (UGX)</label><input class="efin" type="text" id="efAmt" placeholder="284,000" /></div>
+            <div><label class="eflbl">Commission Period</label>
+              <select class="efsel" id="efPeriod">
+                <option value="">Select...</option>
+                <option>Apr 2026</option><option>Mar 2026</option><option>Feb 2026</option><option>Jan 2026</option>
+              </select>
+            </div>
+            <div><label class="eflbl">Invoice Date</label><input class="efin" type="date" id="efDate" /></div>
+          </div>
+          <div class="efbtns">
+            <button class="sub" onclick="submitEf()">Submit Invoice</button>
+          </div>
+          <div class="notif" id="efNotif">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <div><strong>Submitted.</strong> Finance team will be notified via email.</div>
+          </div>
+        </div>
+      </div>`;
+
+  const efrisHistoryWidget = `
+      <div class="wcard">
+        <div class="whead">
+          <div class="wttl"><div class="wbar"></div><span class="wtitle">eFRIS History</span></div>
+          <span class="wcount">${A.efris.length} records</span>
+        </div>
+        <div class="wbody">
+          <div class="widget-stack">
+            <p class="widget-kicker">Submitted invoices are grouped by review status and filing history.</p>
+            ${renderClickableSummaryList([
+              ['Pending review', `${A.efris.filter(item => /Pending/i.test(item.status)).length} filings`, `openOpsEfrisBreakdown('pending')`],
+              ['Processed', `${A.efris.filter(item => /Processed/i.test(item.status)).length} filings`, `openOpsEfrisBreakdown('processed')`],
+              ['All filings', `${A.efris.length} records`, `openOpsEfrisBreakdown('total')`],
+              ['Latest filing', A.efris[0]?.id || '-', `openOpsEfrisBreakdown('latest')`]
+            ])}
+          </div>
+          ${A.efris.length ? '' : `<div class="no-data">No eFRIS filings to show right now.</div>`}
+        </div>
+      </div>`;
+
+  const opsWidgetSets = {
+    commissions: [commissionScheduleWidget, renewalRiskWidget, outstandingPaymentsWidget],
+    actions: [renewalRiskWidget, actionQueueWidget, outstandingPaymentsWidget],
+    payments: [outstandingPaymentsWidget, commissionScheduleWidget, efrisHistoryWidget],
+    efris: [efrisUploadWidget, efrisHistoryWidget, commissionScheduleWidget]
+  };
+
+  document.getElementById('opsArea').innerHTML = `
+    <div class="client-shell">
+      <aside class="client-policy-wrap">
+        <div class="client-policy-list">
+          <button class="client-policy-card ${activeOpsSection === 'commissions' ? 'active' : ''}" onclick="setActiveOpsSection('commissions')">
+            <div class="client-policy-top">
+              <span class="client-policy-id">Commissions</span>
+              <span class="client-policy-amt">${A.kpi.commission}</span>
+            </div>
+            <div class="ops-menu-bottom">
+              <span class="client-policy-tag freq">${A.schedules.length} periods</span>
+              <span class="client-policy-tag due">${A.kpi.pending} pending</span>
+            </div>
+          </button>
+          <button class="client-policy-card ${activeOpsSection === 'actions' ? 'active' : ''}" onclick="setActiveOpsSection('actions')">
+            <div class="client-policy-top">
+              <span class="client-policy-id">Actions</span>
+              <span class="client-policy-amt" style="color:var(--dark)">${actionItems.length} items</span>
+            </div>
+            <div class="ops-menu-bottom">
+              <span class="client-policy-tag freq">${renewalStats.atRisk} at risk</span>
+              <span class="client-policy-tag due">${A.claims.filter(item => item.status !== 'Settled').length} open claims</span>
+            </div>
+          </button>
+          <button class="client-policy-card ${activeOpsSection === 'payments' ? 'active' : ''}" onclick="setActiveOpsSection('payments')">
+            <div class="client-policy-top">
+              <span class="client-policy-id">Payments</span>
+              <span class="client-policy-amt">${paymentStats.outstanding}</span>
+            </div>
+            <div class="ops-menu-bottom">
+              <span class="client-policy-tag freq">${paymentStats.unpaidCount} unpaid</span>
+              <span class="client-policy-tag due">${paymentStats.activePlans} plans</span>
+            </div>
+          </button>
+          <button class="client-policy-card ${activeOpsSection === 'efris' ? 'active' : ''}" onclick="setActiveOpsSection('efris')">
+            <div class="client-policy-top">
+              <span class="client-policy-id">eFRIS</span>
+              <span class="client-policy-amt" style="color:var(--dark)">${A.efris.length} filings</span>
+            </div>
+            <div class="ops-menu-bottom">
+              <span class="client-policy-tag freq">${A.efris.filter(item => /Pending/i.test(item.status)).length} pending</span>
+              <span class="client-policy-tag due">Upload and history</span>
+            </div>
+          </button>
+        </div>
+      </aside>
+      <div class="client-main">
+        <div class="ops-grid">
+          ${opsWidgetSets[activeOpsSection].join('')}
+        </div>
+      </div>
+    </div>`;
+
+  const efFileInput = document.getElementById('efFile');
+  if (efFileInput) {
+    efFileInput.addEventListener('change', function() {
+      const el = document.getElementById('efFileName');
+      if (!el) return;
+      el.textContent = this.files[0] ? this.files[0].name : 'No file selected';
+      el.style.color = this.files[0] ? '#059668' : 'var(--muted)';
+    });
+  }
+  return;
 
   document.getElementById('opsArea').innerHTML = `
     <div class="ops-grid">
@@ -3367,7 +4016,6 @@ function renderAgentWorkspaceV2() {
                   <div class="widget-stack">
                     <p class="widget-kicker">The most important limits, extensions, and active sections for this policy are surfaced here.</p>
                     ${renderSummaryList(model.coverage.summary)}
-                    ${renderChipRow(model.coverage.sections)}
                   </div>
                   <div class="widget-action-end">
                     <button class="btn-red" onclick="openProductWidgetModal('coverage','${selectedPolicy.id}')">View Cover</button>
@@ -3401,7 +4049,7 @@ function renderAgentWorkspaceV2() {
                           </div>
                         `).join('')}
                       </div>
-                    ` : renderChipRow(model.claims.checklist.slice(0, 3))}
+                    ` : ''}
                   </div>
                   <div class="widget-action-end">
                     <button class="btn-red" onclick="openProductWidgetModal('claims','${selectedPolicy.id}')">Open Claim Support</button>
@@ -3420,7 +4068,6 @@ function renderAgentWorkspaceV2() {
                   <div class="widget-stack">
                     <p class="widget-kicker">This keeps the next renewal driver and the follow-up work in one place.</p>
                     ${renderSummaryList(model.renewal.summary)}
-                    ${renderChipRow(model.renewal.tasks.slice(0, 3))}
                   </div>
                   <div class="widget-action-end">
                     <button class="btn-red" onclick="openProductWidgetModal('renewal','${selectedPolicy.id}')">Review Renewal</button>
@@ -3459,7 +4106,6 @@ function renderAgentWorkspaceV2() {
                             ['Suggested deposit', `${ipf.suggestedDepositPct}% upfront`]
                           ]
                     )}
-                    ${renderChipRow((ipf.schedule || model.payments.schedule).slice(0, 3))}
                   </div>
                   <div class="widget-action-end" style="gap:10px;flex-wrap:wrap">
                     <button class="btn-outline-soft" onclick="openProductWidgetModal('payments','${selectedPolicy.id}')">View Payments</button>
@@ -3500,6 +4146,9 @@ function renderAgentWorkspaceV2() {
         </div>
       </div>
     </div>`;
+
+  renderAgentWorkspaceNav();
+  syncAgentWorkspacePanels();
 }
 
 function submitEf() {
