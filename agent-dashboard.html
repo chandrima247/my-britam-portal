@@ -758,6 +758,56 @@
       gap:8px;
       flex-wrap:wrap;
     }
+
+    /* ── OPS NAV MENU ── */
+    .ops-nav-wrap {
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:12px;
+      overflow:hidden;
+    }
+    .ops-nav-item {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      width:100%;
+      padding:11px 14px;
+      border:none;
+      background:none;
+      cursor:pointer;
+      border-left:3px solid transparent;
+      border-bottom:1px solid #f1f5f9;
+      transition:background .15s, border-color .15s;
+      text-align:left;
+      gap:10px;
+    }
+    .ops-nav-item:last-child { border-bottom:none; }
+    .ops-nav-item:hover { background:#f8fafc; }
+    .ops-nav-item.active {
+      background:#eff6ff;
+      border-left-color:#3b82f6;
+    }
+    .ops-nav-left { display:flex; flex-direction:column; gap:2px; min-width:0; }
+    .ops-nav-label {
+      font-size:12.5px;
+      font-weight:700;
+      color:var(--dark);
+      line-height:1.2;
+    }
+    .ops-nav-sub {
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.3;
+    }
+    .ops-nav-right { display:flex; flex-direction:column; align-items:flex-end; gap:2px; flex-shrink:0; }
+    .ops-nav-val {
+      font-size:13px;
+      font-weight:700;
+      color:#059668;
+      white-space:nowrap;
+    }
+    .ops-nav-val.neutral { color:var(--dark); }
+    .ops-nav-chevron { color:#94a3b8; flex-shrink:0; }
     .client-policy-tag {
       font-size:10px;
       font-weight:800;
@@ -3505,47 +3555,47 @@ function renderAgentWorkspace() {
 
   document.getElementById('opsArea').innerHTML = `
     <div class="client-shell">
-      <aside class="client-policy-wrap">
-        <div class="client-policy-list">
-          <button class="client-policy-card ${activeOpsSection === 'commissions' ? 'active' : ''}" onclick="setActiveOpsSection('commissions')">
-            <div class="client-policy-top">
-              <span class="client-policy-id">Commissions</span>
-              <span class="client-policy-amt">${A.kpi.commission}</span>
+      <aside class="client-policy-wrap" style="padding:0;background:none;border:none;">
+        <div class="ops-nav-wrap">
+          <button class="ops-nav-item ${activeOpsSection === 'commissions' ? 'active' : ''}" onclick="setActiveOpsSection('commissions')">
+            <div class="ops-nav-left">
+              <span class="ops-nav-label">Commissions</span>
+              <span class="ops-nav-sub">${A.schedules.length} periods · ${A.kpi.pending} pending</span>
             </div>
-            <div class="ops-menu-bottom">
-              <span class="client-policy-tag freq">${A.schedules.length} periods</span>
-              <span class="client-policy-tag due">${A.kpi.pending} pending</span>
+            <div class="ops-nav-right">
+              <span class="ops-nav-val">${A.kpi.commission}</span>
             </div>
+            <svg class="ops-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
           </button>
-          <button class="client-policy-card ${activeOpsSection === 'actions' ? 'active' : ''}" onclick="setActiveOpsSection('actions')">
-            <div class="client-policy-top">
-              <span class="client-policy-id">Actions</span>
-              <span class="client-policy-amt" style="color:var(--dark)">${actionItems.length} items</span>
+          <button class="ops-nav-item ${activeOpsSection === 'actions' ? 'active' : ''}" onclick="setActiveOpsSection('actions')">
+            <div class="ops-nav-left">
+              <span class="ops-nav-label">Actions</span>
+              <span class="ops-nav-sub">${renewalStats.atRisk} at risk · ${A.claims.filter(c => c.status !== 'Settled').length} open claims</span>
             </div>
-            <div class="ops-menu-bottom">
-              <span class="client-policy-tag freq">${renewalStats.atRisk} at risk</span>
-              <span class="client-policy-tag due">${A.claims.filter(item => item.status !== 'Settled').length} open claims</span>
+            <div class="ops-nav-right">
+              <span class="ops-nav-val neutral">${actionItems.length} items</span>
             </div>
+            <svg class="ops-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
           </button>
-          <button class="client-policy-card ${activeOpsSection === 'payments' ? 'active' : ''}" onclick="setActiveOpsSection('payments')">
-            <div class="client-policy-top">
-              <span class="client-policy-id">Payments</span>
-              <span class="client-policy-amt">${paymentStats.outstanding}</span>
+          <button class="ops-nav-item ${activeOpsSection === 'payments' ? 'active' : ''}" onclick="setActiveOpsSection('payments')">
+            <div class="ops-nav-left">
+              <span class="ops-nav-label">Payments</span>
+              <span class="ops-nav-sub">${paymentStats.unpaidCount} unpaid · ${paymentStats.activePlans} plans</span>
             </div>
-            <div class="ops-menu-bottom">
-              <span class="client-policy-tag freq">${paymentStats.unpaidCount} unpaid</span>
-              <span class="client-policy-tag due">${paymentStats.activePlans} plans</span>
+            <div class="ops-nav-right">
+              <span class="ops-nav-val">${paymentStats.outstanding}</span>
             </div>
+            <svg class="ops-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
           </button>
-          <button class="client-policy-card ${activeOpsSection === 'efris' ? 'active' : ''}" onclick="setActiveOpsSection('efris')">
-            <div class="client-policy-top">
-              <span class="client-policy-id">eFRIS</span>
-              <span class="client-policy-amt" style="color:var(--dark)">${A.efris.length} filings</span>
+          <button class="ops-nav-item ${activeOpsSection === 'efris' ? 'active' : ''}" onclick="setActiveOpsSection('efris')">
+            <div class="ops-nav-left">
+              <span class="ops-nav-label">eFRIS</span>
+              <span class="ops-nav-sub">${A.efris.filter(e => /Pending/i.test(e.status)).length} pending · upload &amp; history</span>
             </div>
-            <div class="ops-menu-bottom">
-              <span class="client-policy-tag freq">${A.efris.filter(item => /Pending/i.test(item.status)).length} pending</span>
-              <span class="client-policy-tag due">Upload and history</span>
+            <div class="ops-nav-right">
+              <span class="ops-nav-val neutral">${A.efris.length} filings</span>
             </div>
+            <svg class="ops-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
           </button>
         </div>
       </aside>
