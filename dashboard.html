@@ -2019,9 +2019,32 @@
       .widget-cols { grid-template-columns: repeat(2, 1fr); }
     }
     @media (max-width: 768px) {
-      .main-row { flex-direction: column; }
+      .content-area { padding: 0 14px; }
+      .heading-row { padding: 14px 0 10px; flex-wrap: wrap; gap: 8px; }
+      .heading-row h1 { font-size: 18px; }
+      .main-row { flex-direction: column; gap: 10px; padding-bottom: 20px; }
       .policy-col { flex: none; width: 100%; max-width: 100%; }
-      .policy-scroll-area { position: static; }
+      .policy-scroll-area {
+        position: static;
+        padding: 12px;
+        gap: 8px;
+      }
+      /* Horizontal scrollable policy strip */
+      #policyList {
+        flex-direction: row;
+        overflow-x: auto;
+        gap: 10px;
+        padding-bottom: 6px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+      }
+      #policyList::-webkit-scrollbar { display: none; }
+      .policy-card {
+        min-width: 220px;
+        flex-shrink: 0;
+      }
+      .pg-arrow { display: none; }
+      .policy-nav-row { display: none; }
       .widget-cols { grid-template-columns: 1fr; }
     }
   </style>

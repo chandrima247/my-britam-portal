@@ -1460,16 +1460,67 @@
       .agent-kpi-bar { grid-template-columns:repeat(2, minmax(0, 1fr)); }
       .agent-kpi-item:nth-child(2) { border-right:none; }
       .agent-kpi-item:nth-child(-n+2) { border-bottom:1px solid var(--border); }
+      /* Unstick sidebar when it stacks */
+      .client-policy-wrap { position:static; }
     }
-    @media (max-width:700px)  {
+    @media (max-width:700px) {
       .grid3, .ops-grid, .client-grid, .client-widget-cols { grid-template-columns:1fr; }
       .wrap { padding:0 14px; }
+      .hrow { flex-wrap:wrap; gap:8px; padding:14px 0 10px; }
+      .hrow h1, .hrow .page-title { font-size:18px; }
       .efform { grid-template-columns:1fr; }
-      .agent-kpi-bar { grid-template-columns:1fr; }
-      .agent-kpi-item { border-right:none; border-bottom:1px solid var(--border); padding:15px 16px; }
+      .agent-kpi-bar { grid-template-columns:1fr 1fr; }
+      .agent-kpi-item { border-right:none; border-bottom:1px solid var(--border); padding:12px 14px; }
       .agent-kpi-item:last-child { border-bottom:none; }
-      .agent-kpi-val { font-size:24px; }
+      .agent-kpi-val { font-size:22px; }
       .client-mini-kpis { grid-template-columns:1fr 1fr; }
+      /* Policy sidebar → horizontal scroll strip */
+      .client-shell { gap:10px; }
+      .client-policy-wrap {
+        position:static;
+        padding:10px;
+        gap:8px;
+      }
+      .client-policy-list {
+        flex-direction:row;
+        overflow-x:auto;
+        gap:10px;
+        padding-bottom:4px;
+        scrollbar-width:none;
+        -webkit-overflow-scrolling:touch;
+      }
+      .client-policy-list::-webkit-scrollbar { display:none; }
+      .client-policy-card {
+        min-width:200px;
+        flex-shrink:0;
+      }
+      /* Ops nav same treatment */
+      .ops-nav-wrap {
+        display:flex;
+        flex-direction:row;
+        overflow-x:auto;
+        scrollbar-width:none;
+        -webkit-overflow-scrolling:touch;
+        border-radius:10px;
+      }
+      .ops-nav-wrap::-webkit-scrollbar { display:none; }
+      .ops-nav-item {
+        min-width:140px;
+        flex-shrink:0;
+        border-bottom:none;
+        border-right:1px solid #f1f5f9;
+        border-left:none;
+        border-top:3px solid transparent;
+        flex-direction:column;
+        align-items:flex-start;
+        gap:4px;
+      }
+      .ops-nav-item:last-child { border-right:none; }
+      .ops-nav-item.active {
+        border-top-color:#3b82f6;
+        border-left-color:transparent;
+      }
+      .ops-nav-chevron { display:none; }
     }
   </style>
 </head>
