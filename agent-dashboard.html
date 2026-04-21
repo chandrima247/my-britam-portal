@@ -249,7 +249,7 @@
 
     /* ── HEADING ── */
     .hrow { display:flex; align-items:center; justify-content:space-between; padding:20px 0 14px; }
-    .hleft { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .hleft { display:flex; align-items:center; gap:10px; flex-wrap:nowrap; min-width:0; overflow:hidden; }
     .hrow h1 { font-size:20px; font-weight:700; color:var(--dark); letter-spacing:-.2px; }
     .pill { font-size:10px; font-weight:700; border-radius:20px; padding:3px 10px; }
     .pill-g { background:var(--faint); border:1px solid var(--border); color:var(--muted); }
@@ -271,7 +271,8 @@
       z-index:2;
     }
     .workspace-tab {
-      min-width:220px;
+      min-width:140px;
+      flex:1;
       border:1px solid #d7e0ea;
       border-bottom:none;
       border-radius:14px 14px 0 0;
@@ -1460,67 +1461,79 @@
       .agent-kpi-bar { grid-template-columns:repeat(2, minmax(0, 1fr)); }
       .agent-kpi-item:nth-child(2) { border-right:none; }
       .agent-kpi-item:nth-child(-n+2) { border-bottom:1px solid var(--border); }
-      /* Unstick sidebar when it stacks */
       .client-policy-wrap { position:static; }
     }
     @media (max-width:700px) {
       .grid3, .ops-grid, .client-grid, .client-widget-cols { grid-template-columns:1fr; }
-      .wrap { padding:0 14px; }
-      .hrow { flex-wrap:wrap; gap:8px; padding:14px 0 10px; }
-      .hrow h1, .hrow .page-title { font-size:18px; }
+      .wrap { padding:0 12px; }
+      .hrow { flex-wrap:wrap; gap:6px; padding:12px 0 8px; }
       .efform { grid-template-columns:1fr; }
-      .agent-kpi-bar { grid-template-columns:1fr 1fr; }
-      .agent-kpi-item { border-right:none; border-bottom:1px solid var(--border); padding:12px 14px; }
-      .agent-kpi-item:last-child { border-bottom:none; }
-      .agent-kpi-val { font-size:22px; }
-      .client-mini-kpis { grid-template-columns:1fr 1fr; }
-      /* Policy sidebar → horizontal scroll strip */
-      .client-shell { gap:10px; }
-      .client-policy-wrap {
-        position:static;
-        padding:10px;
-        gap:8px;
-      }
-      .client-policy-list {
-        flex-direction:row;
-        overflow-x:auto;
-        gap:10px;
-        padding-bottom:4px;
-        scrollbar-width:none;
-        -webkit-overflow-scrolling:touch;
-      }
-      .client-policy-list::-webkit-scrollbar { display:none; }
-      .client-policy-card {
-        min-width:200px;
-        flex-shrink:0;
-      }
-      /* Ops nav same treatment */
-      .ops-nav-wrap {
-        display:flex;
-        flex-direction:row;
-        overflow-x:auto;
-        scrollbar-width:none;
-        -webkit-overflow-scrolling:touch;
-        border-radius:10px;
-      }
-      .ops-nav-wrap::-webkit-scrollbar { display:none; }
-      .ops-nav-item {
-        min-width:140px;
-        flex-shrink:0;
-        border-bottom:none;
-        border-right:1px solid #f1f5f9;
-        border-left:none;
-        border-top:3px solid transparent;
+      .col { gap:8px; }
+      .panel { padding:14px 14px 18px; margin-bottom:16px; }
+
+      /* KPI bar — 2×2 compact */
+      .agent-kpi-bar { grid-template-columns:1fr 1fr; margin-bottom:12px; }
+      .agent-kpi-item {
         flex-direction:column;
         align-items:flex-start;
         gap:4px;
+        padding:10px 12px;
+        border-right:1px solid var(--border);
+        border-bottom:1px solid var(--border);
       }
-      .ops-nav-item:last-child { border-right:none; }
-      .ops-nav-item.active {
-        border-top-color:#3b82f6;
-        border-left-color:transparent;
+      .agent-kpi-item:nth-child(2n) { border-right:none; }
+      .agent-kpi-item:nth-last-child(-n+2) { border-bottom:none; }
+      .agent-kpi-copy { gap:1px; }
+      .agent-kpi-lbl { font-size:10px; }
+      .agent-kpi-sub { font-size:10px; }
+      .agent-kpi-meta { align-items:flex-start; text-align:left; }
+      .agent-kpi-val { font-size:19px; }
+      .agent-kpi-note { font-size:10px; }
+      .client-mini-kpis { grid-template-columns:1fr 1fr; }
+      .client-shell { gap:8px; }
+
+      /* Widgets compact */
+      .wcard { border-radius:8px; }
+      .whead { padding:8px 11px; }
+      .wtitle { font-size:12.5px; }
+      .wbody { padding:8px 11px 11px; }
+      .pd-grid { gap:8px 14px; }
+      .summary-row { padding:6px 0; }
+      .summary-list { gap:0; }
+      .widget-action-end { margin-top:10px; }
+      .widget-stack { gap:7px; }
+
+      /* Policy sidebar — compact stacked rows */
+      .client-policy-wrap { position:static; padding:8px; gap:6px; }
+      .client-policy-list { flex-direction:column; gap:5px; }
+      .client-policy-card { padding:9px 11px; border-width:1.5px; }
+      .client-policy-top { margin-bottom:3px; }
+      .client-policy-id { font-size:12px; }
+      .client-policy-amt { font-size:12px; }
+      .client-policy-bottom .client-policy-tag.due { display:none; }
+      .client-policy-refresh { display:none; }
+
+      /* Ops nav — 2×2 grid */
+      .ops-nav-wrap {
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:7px;
+        background:none;
+        border:none;
+        border-radius:0;
       }
+      .ops-nav-item {
+        border:1.5px solid var(--border);
+        border-left:3px solid transparent;
+        border-radius:9px;
+        padding:9px 11px;
+        background:#fff;
+      }
+      .ops-nav-item:last-child { border-right:1.5px solid var(--border); border-bottom:1.5px solid var(--border); }
+      .ops-nav-item.active { background:#eff6ff; border-color:#bfdbfe; border-left-color:#3b82f6; }
       .ops-nav-chevron { display:none; }
+      .ops-nav-label { font-size:12px; }
+      .ops-nav-sub { font-size:10px; }
     }
   </style>
 </head>
@@ -1546,8 +1559,6 @@
         </a>
         <span style="color:#e5e7eb">|</span>
         <h1 id="agentName">Agent Dashboard</h1>
-        <span class="pill pill-g" id="agentCode"></span>
-        <span class="pill pill-b">Intermediary</span>
       </div>
       <button class="btn-logout" onclick="logoutPortal()" title="Logout">
         <svg width="19" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
