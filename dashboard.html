@@ -545,7 +545,7 @@
     }
     .widget-cols {
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
       align-items: start;
     }
@@ -4670,15 +4670,16 @@ function renderWidgets() {
   let columnsToRender;
   let columnCount;
 
-  let allCards;
+  let columnsHTML;
   if (activeWidgetFilter === 'all') {
-    allCards = allColumns.flat();
+    columnsHTML = allColumns.map(col => `<div class="widget-col">${col.join('')}</div>`).join('');
   } else {
-    allCards = widgetCards.filter(card => card.category === activeWidgetFilter).map(card => card.html);
+    const filtered = widgetCards.filter(card => card.category === activeWidgetFilter).map(card => card.html);
+    columnsHTML = `<div class="widget-col">${filtered.join('')}</div>`;
   }
 
   widgetArea.style.gridTemplateColumns = '';
-  widgetArea.innerHTML = `<div class="widget-col">${allCards.join('')}</div>`;
+  widgetArea.innerHTML = columnsHTML;
 
   // re-attach file listener
   document.getElementById('efFile') && document.getElementById('efFile').addEventListener('change', function() {
